@@ -13,6 +13,3 @@ endmacro()
 
 add_test_executable(protocol)
 add_test_executable(prot_on_off)
-
-
-add_executable(bench "bench.cpp")

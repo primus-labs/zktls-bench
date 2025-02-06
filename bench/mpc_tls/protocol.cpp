@@ -172,14 +172,14 @@ void full_protocol(IO* io, IO* io_opt, COT<IO>* cot, int party) {
 }
 
 int main(int argc, char** argv) {
-	if (argc < 5) {
-		printf("usage: %s $party $port $request_size $response_size\n", argv[0]);
-		exit(1);
-	}
+    if (argc < 5) {
+        printf("usage: %s $party $port $request_size $response_size\n", argv[0]);
+        exit(1);
+    }
     int port, party;
     parse_party_and_port(argv, &party, &port);
-	QUERY_BYTE_LEN = atoi(argv[3]);
-	RESPONSE_BYTE_LEN = atoi(argv[4]);
+    QUERY_BYTE_LEN = atoi(argv[3]);
+    RESPONSE_BYTE_LEN = atoi(argv[4]);
     NetIO* io = new NetIO(party == ALICE ? nullptr : "127.0.0.1", port);
     NetIO* io_opt = new NetIO(party == ALICE ? nullptr : "127.0.0.1", port + 1);
 
@@ -221,6 +221,13 @@ int main(int argc, char** argv) {
 #endif
     cout << "comm: " << ((io->counter) * 1.0) / 1024 << " KBytes" << endl;
     cout << "total time: " << emp::time_from(start) << " us" << endl;
+    
+    char filename[256];
+    sprintf(filename, "output_%s.csv", argv[1]); 
+    FILE* fp = fopen(filename, "a");
+    fprintf(fp, "%d,%d,%.3f KBytes,%.3f ms\n", (int)QUERY_BYTE_LEN, (int)RESPONSE_BYTE_LEN, ((io->counter) * 1.0) / 1024, emp::time_from(start) / 1e3);
+    fclose(fp);
+
     delete io;
     delete io_opt;
     for (int i = 0; i < threads; i++) {

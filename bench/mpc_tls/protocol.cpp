@@ -20,8 +20,8 @@
 using namespace std;
 using namespace emp;
 
-const size_t QUERY_BYTE_LEN = 2 * 1024;
-const size_t RESPONSE_BYTE_LEN = 2 * 1024;
+static size_t QUERY_BYTE_LEN = 2 * 1024;
+static size_t RESPONSE_BYTE_LEN = 2 * 1024;
 
 const int threads = 1;
 
@@ -56,7 +56,7 @@ void full_protocol(IO* io, IO* io_opt, COT<IO>* cot, int party) {
     memset(tau_c, 0x33, 32);
     memset(tau_s, 0x44, 32);
     memset(cmsg, 0x55, QUERY_BYTE_LEN);
-    memset(smsg, 0x66, QUERY_BYTE_LEN);
+    memset(smsg, 0x66, RESPONSE_BYTE_LEN);
 
     unsigned char aad[] = {0xfe, 0xed, 0xfa, 0xce, 0xde, 0xad, 0xbe, 0xef, 0xfe, 0xed,
                            0xfa, 0xce, 0xde, 0xad, 0xbe, 0xef, 0xab, 0xad, 0xda, 0xd2};
@@ -172,8 +172,14 @@ void full_protocol(IO* io, IO* io_opt, COT<IO>* cot, int party) {
 }
 
 int main(int argc, char** argv) {
+	if (argc < 5) {
+		printf("usage: %s $party $port $request_size $response_size\n", argv[0]);
+		exit(1);
+	}
     int port, party;
     parse_party_and_port(argv, &party, &port);
+	QUERY_BYTE_LEN = atoi(argv[3]);
+	RESPONSE_BYTE_LEN = atoi(argv[4]);
     NetIO* io = new NetIO(party == ALICE ? nullptr : "127.0.0.1", port);
     NetIO* io_opt = new NetIO(party == ALICE ? nullptr : "127.0.0.1", port + 1);
 
@@ -187,7 +193,6 @@ int main(int argc, char** argv) {
     auto prot = (PrimusParty<NetIO>*)(ProtocolExecution::prot_exec);
     IKNP<NetIO>* cot = prot->ot;
     full_protocol<NetIO>(io, io_opt, cot, party);
-    cout << "total time: " << emp::time_from(start) << " us" << endl;
 
     cout << "gc AND gates: " << dec << gc_circ_buf->num_and() << endl;
     cout << "zk AND gates: " << dec << zk_circ_buf->num_and() << endl;
@@ -215,6 +220,7 @@ int main(int argc, char** argv) {
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
     cout << "comm: " << ((io->counter) * 1.0) / 1024 << " KBytes" << endl;
+    cout << "total time: " << emp::time_from(start) << " us" << endl;
     delete io;
     delete io_opt;
     for (int i = 0; i < threads; i++) {

@@ -13,4 +13,6 @@ find_package(emp-zk REQUIRED)
 include_directories(${EMP-ZK_INCLUDE_DIRS})
 
 find_package(otls REQUIRED)
-include(mpc_tls)
+include_directories(${OTLS_INCLUDE_DIRS})
+
+add_subdirectory(mpc_tls)

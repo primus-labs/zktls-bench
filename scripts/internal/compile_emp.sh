@@ -17,7 +17,7 @@ ossl_root=${installdir}
 # ######################
 for repo in ${emp_repos[@]}; do
   echo "compile ${repo}"
-  repo_dir=${thirdparty_dir}/pado-emp/${repo}
+  repo_dir=${thirdparty_dir}/primus-emp/${repo}
   cd ${curdir}
   if [ -d ${repo_dir} ]; then
     mkdir -p ${builddir}/${repo}

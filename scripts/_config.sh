@@ -13,10 +13,10 @@ echo "===== compile target: ${target}, on ${uname_s} ${arch_n} ====="
 #######################################################################
 #######################################################################
 build_type=Debug
-build_type=Release
+#build_type=Release
 
 make_verbose="VERBOSE=1"
-make_verbose=
+#make_verbose=
 
 # switch ON/OFF to enable/disable
 enable_test=ON

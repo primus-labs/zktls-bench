@@ -10,7 +10,7 @@ ossl_root=${installdir}
 #
 #
 # ######################
-repo=pado
+repo=bench
 repo_dir=${curdir}/${repo}
 cd ${curdir}
 if [ -d ${repo_dir} ]; then

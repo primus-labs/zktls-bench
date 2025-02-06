@@ -1,0 +1,9 @@
+[submodule "3rd/openssl-1.1.1"]
+	path = 3rd/openssl-1.1.1
+	url = git@github.com:primus-labs/openssl.git
+[submodule "3rd/otls"]
+	path = 3rd/otls
+	url = git@github.com:primus-labs/otls.git
+[submodule "3rd/primus-emp"]
+	path = 3rd/primus-emp
+	url = git@github.com:primus-labs/primus-emp.git

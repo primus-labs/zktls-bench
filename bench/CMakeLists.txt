@@ -16,3 +16,4 @@ find_package(otls REQUIRED)
 include_directories(${OTLS_INCLUDE_DIRS})
 
 add_subdirectory(mpc_tls)
+add_subdirectory(proxy_tls)

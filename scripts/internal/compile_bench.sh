@@ -28,7 +28,6 @@ if [ -d ${repo_dir} ]; then
     -DOPENSSL_SSL_LIBRARY=${ossl_root}/lib/libssl.a \
     -DOPENSSL_CRYPTO_LIBRARY=${ossl_root}/lib/libcrypto.a
   make -j${nproc} ${make_verbose}
-  make install
 else
   echo "${repo} not exist!"
 fi

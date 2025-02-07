@@ -177,11 +177,12 @@ int main(int argc, char** argv) {
         exit(1);
     }
     int port, party;
-    parse_party_and_port(argv, &party, &port);
-    QUERY_BYTE_LEN = atoi(argv[3]);
-    RESPONSE_BYTE_LEN = atoi(argv[4]);
-    NetIO* io = new NetIO(party == ALICE ? nullptr : "127.0.0.1", port);
-    NetIO* io_opt = new NetIO(party == ALICE ? nullptr : "127.0.0.1", port + 1);
+    party = atoi(argv[1]);
+    port = atoi(argv[3]);
+    QUERY_BYTE_LEN = atoi(argv[4]);
+    RESPONSE_BYTE_LEN = atoi(argv[5]);
+    NetIO* io = new NetIO(party == ALICE ? nullptr : argv[2], port);
+    NetIO* io_opt = new NetIO(party == ALICE ? nullptr : argv[2], port + 1);
 
     BoolIO<NetIO>* ios[threads];
     for (int i = 0; i < threads; i++)

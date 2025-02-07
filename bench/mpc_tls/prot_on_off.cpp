@@ -184,16 +184,17 @@ void full_protocol(HandShake<IO>* hs, IO* io, IO* io_opt, COT<IO>* cot, int part
 }
 
 int main(int argc, char** argv) {
-	if (argc < 5) {
-		printf("usage: %s $party $port $request_size $response_size\n", argv[0]);
-		exit(1);
-	}
+    if (argc < 5) {
+        printf("usage: %s $party $port $request_size $response_size\n", argv[0]);
+        exit(1);
+    }
     int port, party;
-    parse_party_and_port(argv, &party, &port);
-	QUERY_BYTE_LEN = atoi(argv[3]);
-	RESPONSE_BYTE_LEN = atoi(argv[4]);
-    NetIO* io = new NetIO(party == ALICE ? nullptr : "127.0.0.1", port);
-    NetIO* io_opt = new NetIO(party == ALICE ? nullptr : "127.0.0.1", port + 1);
+    party = atoi(argv[1]);
+    port = atoi(argv[3]);
+    QUERY_BYTE_LEN = atoi(argv[3]);
+    RESPONSE_BYTE_LEN = atoi(argv[4]);
+    NetIO* io = new NetIO(party == ALICE ? nullptr : argv[2], port);
+    NetIO* io_opt = new NetIO(party == ALICE ? nullptr : argv[2], port + 1);
 
     BoolIO<NetIO>* ios[threads];
     for (int i = 0; i < threads; i++)
@@ -262,7 +263,7 @@ int main(int argc, char** argv) {
     FILE* fp = fopen(filename, "a");
     fprintf(fp, "%d,%d,%.3f KBytes,%.3f ms\n", (int)QUERY_BYTE_LEN, (int)RESPONSE_BYTE_LEN, ((io->counter) * 1.0) / 1024, emp::time_from(start) / 1e3);
     fclose(fp);
-	
+    
     delete io;
     for (int i = 0; i < threads; i++) {
         delete ios[i];

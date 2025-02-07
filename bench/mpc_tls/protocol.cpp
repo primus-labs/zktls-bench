@@ -16,6 +16,9 @@
 #include <sys/resource.h>
 #include <mach/mach.h>
 #endif
+#include "helper.h"
+#include <json.hpp>
+using json = nlohmann::ordered_json;
 
 using namespace std;
 using namespace emp;
@@ -171,18 +174,21 @@ void full_protocol(IO* io, IO* io_opt, COT<IO>* cot, int party) {
     EC_GROUP_free(group);
 }
 
-int main(int argc, char** argv) {
-    if (argc < 5) {
-        printf("usage: %s $party $port $request_size $response_size\n", argv[0]);
-        exit(1);
-    }
-    int port, party;
-    party = atoi(argv[1]);
-    port = atoi(argv[3]);
-    QUERY_BYTE_LEN = atoi(argv[4]);
-    RESPONSE_BYTE_LEN = atoi(argv[5]);
-    NetIO* io = new NetIO(party == ALICE ? nullptr : argv[2], port);
-    NetIO* io_opt = new NetIO(party == ALICE ? nullptr : argv[2], port + 1);
+string result;
+PORT_FUNCTION(const char*) _main(const char* args) {
+    json j = json::parse(args);
+    string partyStr = j["party"];
+    string portStr = j["port"];
+    string requestSizeStr = j["requestSize"];
+    string responseSizeStr = j["responseSize"];
+    string ip = j["ip"];
+
+    int party = atoi(partyStr.c_str());
+    int port = atoi(portStr.c_str());
+    QUERY_BYTE_LEN = atoi(requestSizeStr.c_str());
+    RESPONSE_BYTE_LEN = atoi(responseSizeStr.c_str());
+    NetIO* io = new NetIO(party == ALICE ? nullptr : ip.c_str(), port);
+    NetIO* io_opt = new NetIO(party == ALICE ? nullptr : ip.c_str(), port + 1);
 
     BoolIO<NetIO>* ios[threads];
     for (int i = 0; i < threads; i++)
@@ -223,16 +229,51 @@ int main(int argc, char** argv) {
     cout << "comm: " << ((io->counter) * 1.0) / 1024 << " KBytes" << endl;
     cout << "total time: " << emp::time_from(start) << " us" << endl;
     
-    char filename[256];
-    sprintf(filename, "output_%s.csv", argv[1]); 
-    FILE* fp = fopen(filename, "a");
-    fprintf(fp, "%d,%d,%.3f KBytes,%.3f ms\n", (int)QUERY_BYTE_LEN, (int)RESPONSE_BYTE_LEN, ((io->counter) * 1.0) / 1024, emp::time_from(start) / 1e3);
-    fclose(fp);
+    json j2 = {
+        {"requestSize", QUERY_BYTE_LEN},
+        {"responseSize", RESPONSE_BYTE_LEN},
+        {"sendBytes", ((io->counter) * 1.0) / 1024},
+        {"totalCost", emp::time_from(start) / 1e3}
+    };
 
     delete io;
     delete io_opt;
     for (int i = 0; i < threads; i++) {
         delete ios[i];
     }
+    result = j2.dump();
+    return result.c_str();
+}
+
+int main(int argc, char** argv) {
+#ifndef __EMSCRIPTEN__
+    if (argc < 5) {
+        printf("usage: %s $party $port $request_size $response_size\n", argv[0]);
+        exit(1);
+    }
+
+    json j = {
+        {"party", argv[1]},
+        {"ip", argv[2]},
+        {"port", argv[3]},
+        {"requestSize", argv[4]},
+        {"responseSize", argv[5]}
+    };
+    const char* s = _main(j.dump().c_str());
+    printf("result:%s\n", s);
+
+    json j2 = json::parse(s);
+    int requestSize = j2["requestSize"];
+    int responseSize = j2["responseSize"];
+    double sendBytes = j2["sendBytes"];
+    double totalCost = j2["totalCost"];
+
+    char filename[256];
+    sprintf(filename, "output_%s.csv", argv[1]); 
+    FILE* fp = fopen(filename, "a");
+    fprintf(fp, "%d,%d,%.3f,%.3f\n", requestSize, responseSize, sendBytes, totalCost);
+    fclose(fp);
+#endif
     return 0;
 }
+

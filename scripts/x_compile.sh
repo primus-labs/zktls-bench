@@ -17,6 +17,13 @@ if [ "${target}" = "cpp" ] || [ "${target}" = "all" ]; then
   bash ./scripts/internal/compile_bench.sh
 fi
 
+if [ "${target}" = "wasm" ] || [ "${target}" = "all" ]; then
+  bash ./scripts/internal/compile_openssl_wasm.sh
+  bash ./scripts/internal/compile_emp_wasm.sh
+  bash ./scripts/internal/compile_otls_wasm.sh
+  bash ./scripts/internal/compile_bench_wasm.sh
+fi
+
 cd ${curdir}
 
 echo "compile done"

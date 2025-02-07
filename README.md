@@ -1,5 +1,4 @@
 # zktls-bench
-## mpc tls bench
 ### Compile
 Compile the project by running:
 ```bash
@@ -23,5 +22,6 @@ On the verifier side, you can start by running:
 ./scripts/bench.sh ./build/cpp/bench/bin/test_protocol 2 127.0.0.1 12345 lo
 ```
 
+For proxy-tls model, the bench program is `./build/cpp/bin/test_prove_proxy_tls`. You can run `./scripts/bench.sh` to start bench in the same way as the mpc-tls model.
 ### bench result
 Bench result is outputed in `output_${party}.csv`. From the left to right, the fields are `request_size`, `response_size`, `send bytes`, `total cost time`.

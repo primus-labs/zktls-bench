@@ -17,6 +17,9 @@
 using namespace std;
 using namespace emp;
 
+static size_t QUERY_BYTE_LEN = 2 * 1024;
+static size_t RESPONSE_BYTE_LEN = 2 * 1024;
+
 bool prove_proxy_tls(int party) {
     bool res = false;
     unsigned char pms_buf[] = {0xe4, 0x2b, 0xf7, 0x1c, 0x75, 0x85, 0x21, 0x79, 0x57, 0xe7, 0x48, 0x37, 0xd8, 0xb9, 0x1a, 0xda, 0xce, 0x31, 0x1b, 0x48, 0x4d, 0xfb, 0x5c, 0x1c, 0x65, 0x10, 0x10, 0xb0, 0x77, 0x64, 0x27, 0x7f};
@@ -30,9 +33,18 @@ bool prove_proxy_tls(int party) {
     unsigned char server_fin_iv[] =  {0xd9, 0x2f, 0xd9, 0xa4, 0xa1, 0x38, 0x1b, 0xca};
     unsigned char server_fin_ctxt[] = {0x02, 0x42, 0x44, 0x7a, 0xc3, 0x3d, 0x4b, 0xf9, 0x89, 0x0e, 0x00, 0xd9, 0x7d, 0x06, 0x87, 0xb5};
 
-    unsigned char http_msg[] = {0x47, 0x45, 0x54, 0x20, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x76, 0x31, 0x2f, 0x67, 0x65, 0x74, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x31, 0x20, 0x48, 0x54, 0x54, 0x50, 0x2f, 0x31, 0x2e, 0x31, 0x0d, 0x0a, 0x48, 0x6f, 0x73, 0x74, 0x3a, 0x20, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x68, 0x6f, 0x73, 0x74, 0x0d, 0x0a, 0x0d, 0x0a};
+    // unsigned char http_msg[] = {0x47, 0x45, 0x54, 0x20, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x76, 0x31, 0x2f, 0x67, 0x65, 0x74, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x31, 0x20, 0x48, 0x54, 0x54, 0x50, 0x2f, 0x31, 0x2e, 0x31, 0x0d, 0x0a, 0x48, 0x6f, 0x73, 0x74, 0x3a, 0x20, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x68, 0x6f, 0x73, 0x74, 0x0d, 0x0a, 0x0d, 0x0a};
     unsigned char http_iv[] = {0xa1, 0x60, 0x62, 0x7c, 0x3c, 0xc3, 0x9f, 0x8f};
-    unsigned char http_ctxt[] = {0x9b, 0x75, 0xf9, 0x00, 0x0a, 0xd3, 0x9d, 0xef, 0x92, 0x56, 0x4a, 0x78, 0xa1, 0xb4, 0xa0, 0x71, 0xe5, 0x8c, 0xd7, 0x07, 0x61, 0xef, 0xb2, 0x4e, 0x28, 0xe1, 0x40, 0xa2, 0x72, 0xf6, 0xad, 0xa7, 0xbf, 0x6d, 0xe6, 0x0f, 0x65, 0xe7, 0xe8, 0xc1, 0x98, 0xad, 0xcd, 0x37, 0x8e, 0xbd, 0x19, 0xa8, 0x05, 0xbf, 0x52};
+    // unsigned char http_ctxt[] = {0x9b, 0x75, 0xf9, 0x00, 0x0a, 0xd3, 0x9d, 0xef, 0x92, 0x56, 0x4a, 0x78, 0xa1, 0xb4, 0xa0, 0x71, 0xe5, 0x8c, 0xd7, 0x07, 0x61, 0xef, 0xb2, 0x4e, 0x28, 0xe1, 0x40, 0xa2, 0x72, 0xf6, 0xad, 0xa7, 0xbf, 0x6d, 0xe6, 0x0f, 0x65, 0xe7, 0xe8, 0xc1, 0x98, 0xad, 0xcd, 0x37, 0x8e, 0xbd, 0x19, 0xa8, 0x05, 0xbf, 0x52};
+    unsigned char *http_msg_req = new unsigned char[QUERY_BYTE_LEN];
+    unsigned char *http_ctxt_req = new unsigned char[QUERY_BYTE_LEN];
+    unsigned char *http_msg_resp = new unsigned char[RESPONSE_BYTE_LEN];
+    unsigned char *http_ctxt_resp = new unsigned char[RESPONSE_BYTE_LEN];
+
+    memset(http_msg_req, 0x00, QUERY_BYTE_LEN);
+    memset(http_ctxt_req, 0x00, QUERY_BYTE_LEN);
+    memset(http_msg_resp, 0x00, RESPONSE_BYTE_LEN);
+    memset(http_ctxt_resp, 0x00, RESPONSE_BYTE_LEN);
 
     // prove prf
     Integer key_c, key_s, iv_c, iv_s, fin_c, fin_s;
@@ -74,16 +86,32 @@ bool prove_proxy_tls(int party) {
             error("prove server finish msg error");
         }
 
-        unsigned char* buf = new unsigned char[sizeof(http_msg)];
-        memcpy(buf, http_msg, sizeof(http_msg));
-        reverse(buf, buf + sizeof(http_msg));
-        Integer tmp(8 * sizeof(http_msg), buf, ALICE);
-
-        res = prover_c.prove_private_msgs(http_iv, sizeof(http_iv), tmp, http_ctxt, sizeof(http_ctxt));
-        if (!res) {
-            error("prove http msg error");
+        // prove http request
+        {
+            unsigned char* buf = new unsigned char[QUERY_BYTE_LEN];
+            memcpy(buf, http_msg_req, QUERY_BYTE_LEN);
+            reverse(buf, buf + QUERY_BYTE_LEN);
+            Integer tmp(8 * QUERY_BYTE_LEN, buf, ALICE);
+    
+            res = prover_c.prove_private_msgs(http_iv, sizeof(http_iv), tmp, http_ctxt_req, QUERY_BYTE_LEN);
+            if (!res) {
+                // error("prove http msg error");
+            }
+            delete[] buf;
         }
-        delete[] buf;
+        // prove http response 
+        {
+            unsigned char* buf = new unsigned char[RESPONSE_BYTE_LEN];
+            memcpy(buf, http_msg_resp, RESPONSE_BYTE_LEN);
+            reverse(buf, buf + RESPONSE_BYTE_LEN);
+            Integer tmp(8 * RESPONSE_BYTE_LEN, buf, ALICE);
+    
+            res = prover_c.prove_private_msgs(http_iv, sizeof(http_iv), tmp, http_ctxt_resp, RESPONSE_BYTE_LEN);
+            if (!res) {
+                // error("prove http msg error");
+            }
+            delete[] buf;
+        }
          
     }
     return res;
@@ -92,10 +120,13 @@ bool prove_proxy_tls(int party) {
 const int threads = 1;
 int main(int argc, char** argv) {
     int port, party;
-    parse_party_and_port(argv, &party, &port);
+    party = atoi(argv[1]);
+    port = atoi(argv[3]);
+    QUERY_BYTE_LEN = atoi(argv[4]);
+    RESPONSE_BYTE_LEN = atoi(argv[5]);
     NetIO* io[threads];
     for (int i = 0; i < threads; i++) {
-        io[i] = new NetIO(party == ALICE ? nullptr : "127.0.0.1", port + i);
+        io[i] = new NetIO(party == ALICE ? nullptr : argv[2], port + i);
     }
     BoolIO<NetIO>* ios[threads];
     for (int i = 0; i < threads; i++)
@@ -114,7 +145,7 @@ int main(int argc, char** argv) {
     start = emp::clock_start();
     bool res = prove_proxy_tls(party);
     if (!res) {
-        error("prove error:\n");
+        // error("prove error:\n");
     }
 
     cout << "zk AND gates: " << CircuitExecution::circ_exec->num_and() << endl;
@@ -142,6 +173,12 @@ int main(int argc, char** argv) {
     else
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
+
+    char filename[256];
+    sprintf(filename, "output_%s.csv", argv[1]); 
+    FILE* fp = fopen(filename, "a");
+    fprintf(fp, "%d,%d,%.3f KBytes,%.3f ms\n", (int)QUERY_BYTE_LEN, (int)RESPONSE_BYTE_LEN, ((io[0]->counter) * 1.0) / 1024, emp::time_from(start) / 1e3);
+    fclose(fp);
 
     for (int i = 0; i < threads; ++i) {
         delete ios[i]->io;

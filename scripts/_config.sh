@@ -31,31 +31,6 @@ wasm_no_print=OFF
 load_certs_from_memory=ON
 load_circuits_from_memory=ON
 #######################################################################
-# android
-android_ndk_21=
-android_ndk_26=
-android_ndk_21=/root/x/android/sdk/ndk/21.4.7075529
-android_ndk_26=/root/x/android/sdk/ndk/26.1.10909125
-android_cmake=cmake
-if [ "${target}" = "android" ]; then
-  if [ ! -d $android_ndk_21 ]; then
-    echo "please install/set andorid ndk 21.4.7075529. (only for openssl)"
-    exit 1
-  fi
-  if [ ! -d $android_ndk_26 ]; then
-    echo "please install/set andorid ndk 26.1.10909125"
-    exit 1
-  fi
-fi
-
-# ios
-if [ "${target}" = "ios" ]; then
-  if [ "${uname_s}" != "Darwin" ]; then
-    echo "unsupported platform[${uname_s}] for ios"
-    exit 1
-  fi
-fi
-#######################################################################
 #######################################################################
 
 if [ "${target}" = "" ]; then

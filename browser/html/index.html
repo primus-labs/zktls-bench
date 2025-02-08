@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>ZKTLS WASM BENCH TEST</title>
+</head>
+
+<body>
+  <script>
+    var Module_call = null;
+    Module = {};
+    Module.onRuntimeInitialized = async () => {
+      console.log("\nModule Initialized OK.");
+      Module_call = Module.cwrap('_main', 'string', ['string']);
+      document.getElementById('start').disabled = false;
+    };
+
+    function startBench() {
+      let param = {
+        "program": document.getElementById('program').value,
+        "party": document.getElementById('party').value,
+        "ip": document.getElementById('ip').value,
+        "port": document.getElementById('port').value,
+        "requestSize": document.getElementById('requestSize').value,
+        "responseSize": document.getElementById('responseSize').value,
+      };
+      let paramstr = JSON.stringify(param);
+      const res = Module_call(paramstr);
+      console.log('startBench res:', res);
+    }
+  </script>
+  <script src="zktls_bench.js"></script>
+
+  <div>
+    <input class="inp" id="program" value="test_protocol" />
+    <input class="inp" id="party" value="1" />
+    <input class="inp" id="ip" value="127.0.0.1" />
+    <input class="inp" id="port" value="12345" />
+    <input class="inp" id="requestSize" value="1024" />
+    <input class="inp" id="responseSize" value="16" />
+  </div>
+  <div>
+    <button class="btn" id="start" disabled="disabled" onclick="startBench()">start</button>
+  </div>
+
+  <hr />
+
+</body>
+
+</html>

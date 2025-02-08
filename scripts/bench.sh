@@ -14,7 +14,8 @@ do
     response_size=`echo $line | awk -F: '{print $4}'`
     echo "$bandwith#$delay#$request_size#$response_size"
     ./scripts/simulate_network.sh $interface $bandwith $delay
+	./scripts/reset_network.sh $interface
 
-    ./build/cpp/bench/bin/zktls_bench $1 $2 $3 $4 $request_size $response_size
+    ./build/cpp/bench/bin/zktls_bench $1 $2 $3 $4 $request_size $response_size $bandwith $delay
     sleep 5
 done

@@ -30,8 +30,8 @@ PORT_FUNCTION(const char*) _main(const char* args) {
 
 int main(int argc, char** argv) {
 #ifndef __EMSCRIPTEN__
-    if (argc < 6) {
-        printf("usage: %s $program $party $port $request_size $response_size\n", argv[0]);
+    if (argc < 9) {
+        printf("usage: %s $program $party $ip $port $request_size $response_size $bandwith $latency\n", argv[0]);
         exit(1);
     }
 
@@ -54,9 +54,9 @@ int main(int argc, char** argv) {
     double totalCost = j2["totalCost"];
 
     char filename[256];
-    sprintf(filename, "output_%s.csv", argv[1]); 
+    sprintf(filename, "output_%s_%s.csv", argv[1], argv[2]); 
     FILE* fp = fopen(filename, "a");
-    fprintf(fp, "%d,%d,%.3f,%.3f\n", requestSize, responseSize, sendBytes, totalCost);
+    fprintf(fp, "%s,%s,%d,%d,%.3f,%.3f\n", argv[7], argv[8], requestSize, responseSize, sendBytes, totalCost);
     fclose(fp);
 #endif
     return 0;

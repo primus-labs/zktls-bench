@@ -214,6 +214,7 @@ string test_protocol(const string& args) {
     WebSocketIO* io0 = io[0];
 
     auto start = emp::clock_start();
+    auto start0 = start;
     setup_protocol<WebSocketIO>(io0, ios, threads, party);
     cout << "setup time: " << emp::time_from(start) << " us" << endl;
     auto prot = (PrimusParty<WebSocketIO>*)(ProtocolExecution::prot_exec);
@@ -251,13 +252,13 @@ string test_protocol(const string& args) {
     }
     totalCounter += io_opt->counter;
     cout << "comm: " << ((totalCounter) * 1.0) / 1024 << " KBytes" << endl;
-    cout << "total time: " << emp::time_from(start) << " us" << endl;
+    cout << "total time: " << emp::time_from(start0) << " us" << endl;
     
     json j2 = {
         {"requestSize", QUERY_BYTE_LEN},
         {"responseSize", RESPONSE_BYTE_LEN},
         {"sendBytes", ((totalCounter) * 1.0) / 1024},
-        {"totalCost", emp::time_from(start) / 1e3}
+        {"totalCost", emp::time_from(start0) / 1e3}
     };
 
     for (int i = 0; i < threads; i++) {

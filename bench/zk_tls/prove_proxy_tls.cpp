@@ -150,6 +150,7 @@ string test_prove_proxy_tls(const string& args) {
         ios[i] = new BoolIO<WebSocketIO>(io[i], party == ALICE);
 
     auto start = emp::clock_start();
+    auto start0 = start;
     auto comm = io[0]->counter;
 
     setup_proxy_protocol(ios, threads, party);
@@ -191,11 +192,15 @@ string test_prove_proxy_tls(const string& args) {
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
 
+    size_t totalCounter = 0;
+    for (int i = 0; i < threads; i++) {
+        totalCounter += io[i]->counter;
+    }
     json j2 = {
         {"requestSize", QUERY_BYTE_LEN},
         {"responseSize", RESPONSE_BYTE_LEN},
-        {"sendBytes", ((io[0]->counter) * 1.0) / 1024},
-        {"totalCost", emp::time_from(start) / 1e3}
+        {"sendBytes", ((totalCounter) * 1.0) / 1024},
+        {"totalCost", emp::time_from(start0) / 1e3}
     };
     for (int i = 0; i < threads; ++i) {
         delete ios[i];

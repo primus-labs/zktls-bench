@@ -228,6 +228,7 @@ string test_prot_on_off(const string& args) {
     EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
 
     auto start = emp::clock_start();
+    auto start0 = start;
     auto comm = io0->counter;
     setup_protocol<WebSocketIO>(io0, ios, threads, party, true);
     // setup_protocol<WebSocketIO>(io, ios, threads, party);
@@ -286,13 +287,13 @@ string test_prot_on_off(const string& args) {
     }
     totalCounter += io_opt->counter;
     cout << "comm: " << ((totalCounter) * 1.0) / 1024 << " KBytes" << endl;
-    cout << "total time: " << emp::time_from(start) << " us" << endl;
+    cout << "total time: " << emp::time_from(start0) << " us" << endl;
 
     json j2 = {
         {"requestSize", QUERY_BYTE_LEN},
         {"responseSize", RESPONSE_BYTE_LEN},
         {"sendBytes", ((totalCounter) * 1.0) / 1024},
-        {"totalCost", emp::time_from(start) / 1e3}
+        {"totalCost", emp::time_from(start0) / 1e3}
     };
 
     for (int i = 0; i < threads; i++) {

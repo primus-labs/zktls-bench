@@ -26,7 +26,7 @@ using namespace emp;
 static size_t QUERY_BYTE_LEN = 2 * 1024;
 static size_t RESPONSE_BYTE_LEN = 2 * 1024;
 
-const int threads = 1;
+const int threads = 4;
 
 void full_protocol_offline() {
     EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
@@ -199,54 +199,61 @@ string test_prot_on_off(const string& args) {
     QUERY_BYTE_LEN = atoi(requestSizeStr.c_str());
     RESPONSE_BYTE_LEN = atoi(responseSizeStr.c_str());
     printf("_main:%s\n", args.c_str());
-    WebSocketIO* io = nullptr;
     WebSocketIO* io_opt = nullptr;
     if (party == ALICE) {
-        io = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port)).c_str());
-        io->Init();
-        io_opt = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port + 1)).c_str());
+        io_opt = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port + threads)).c_str());
         io_opt->Init();
     }
     else {
-        io = new WebSocketIO(port);
-        io->Init();
-        io_opt = new WebSocketIO(port + 1);
+        io_opt = new WebSocketIO(port + threads);
         io_opt->Init();
     }
 
     BoolIO<WebSocketIO>* ios[threads];
-    for (int i = 0; i < threads; i++)
-        ios[i] = new BoolIO<WebSocketIO>(io, party == ALICE);
+    WebSocketIO* io[threads];
+    for (int i = 0; i < threads; i++) {
+        if (party == ALICE) {
+            io[i] = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port + i)).c_str());
+            io[i]->Init();
+        }
+        else {
+            io[i] = new WebSocketIO(port + i);
+            io[i]->Init();
+        }
+
+        ios[i] = new BoolIO<WebSocketIO>(io[i], party == ALICE);
+    }
+    WebSocketIO* io0 = io[0];
 
     EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
 
     auto start = emp::clock_start();
-    auto comm = io->counter;
-    setup_protocol<WebSocketIO>(io, ios, threads, party, true);
+    auto comm = io0->counter;
+    setup_protocol<WebSocketIO>(io0, ios, threads, party, true);
     // setup_protocol<WebSocketIO>(io, ios, threads, party);
 
     cout << "setup time: " << emp::time_from(start) << " us" << endl;
-    cout << "setup comm: " << io->counter << endl;
+    cout << "setup comm: " << io0->counter << endl;
 
     start = clock_start();
-    comm = io->counter;
+    comm = io0->counter;
 
     auto prot = (PrimusParty<WebSocketIO>*)(gc_prot_buf);
     IKNP<WebSocketIO>* cot = prot->ot;
-    HandShake<WebSocketIO>* hs = new HandShake<WebSocketIO>(io, io_opt, cot, group);
+    HandShake<WebSocketIO>* hs = new HandShake<WebSocketIO>(io0, io_opt, cot, group);
 
     full_protocol_offline();
     hs->compute_pms_offline(party);
 
     switch_to_online<WebSocketIO>(party);
     cout << "offline time: " << emp::time_from(start) << " us" << endl;
-    cout << "offline comm: " << io->counter - comm << endl;
+    cout << "offline comm: " << io0->counter - comm << endl;
 
     start = emp::clock_start();
-    comm = io->counter;
-    full_protocol<WebSocketIO>(hs, io, io_opt, cot, party);
+    comm = io0->counter;
+    full_protocol<WebSocketIO>(hs, io0, io_opt, cot, party);
     cout << "online time: " << emp::time_from(start) << " us" << endl;
-    cout << "online comm: " << io->counter - comm << endl;
+    cout << "online comm: " << io0->counter - comm << endl;
 
     cout << "gc AND gates: " << dec << gc_circ_buf->num_and() << endl;
     cout << "zk AND gates: " << dec << zk_circ_buf->num_and() << endl;
@@ -273,20 +280,25 @@ string test_prot_on_off(const string& args) {
     else
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
-    cout << "comm: " << ((io->counter) * 1.0) / 1024 << " KBytes" << endl;
+    size_t totalCounter = 0;
+    for (int i = 0; i < threads; i++) {
+        totalCounter += io[i]->counter;
+    }
+    totalCounter += io_opt->counter;
+    cout << "comm: " << ((totalCounter) * 1.0) / 1024 << " KBytes" << endl;
     cout << "total time: " << emp::time_from(start) << " us" << endl;
 
     json j2 = {
         {"requestSize", QUERY_BYTE_LEN},
         {"responseSize", RESPONSE_BYTE_LEN},
-        {"sendBytes", ((io->counter) * 1.0) / 1024},
+        {"sendBytes", ((totalCounter) * 1.0) / 1024},
         {"totalCost", emp::time_from(start) / 1e3}
     };
 
     for (int i = 0; i < threads; i++) {
         delete ios[i];
+        delete io[i];
     }
-    delete io;
     delete io_opt;
     return j2.dump();
 }

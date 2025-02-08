@@ -20,6 +20,7 @@ void do_main(const string& args) {
     else if (program == "test_prove_proxy_tls") {
         result = test_prove_proxy_tls(args);
     }
+    printf("DONE:%s\n", result.c_str());
 }
 
 PORT_FUNCTION(const char*) _main(const char* args) {

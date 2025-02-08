@@ -1,4 +1,5 @@
 # zktls-bench
+## CPP
 ### Compile
 Compile the project by running:
 ```bash
@@ -25,3 +26,13 @@ On the verifier side, you can start by running:
 For proxy-tls model, the bench program is `./build/cpp/bin/test_prove_proxy_tls`. You can run `./scripts/bench.sh` to start bench in the same way as the mpc-tls model.
 ### bench result
 Bench result is outputed in `output_${party}.csv`. From the left to right, the fields are `request_size`, `response_size`, `send bytes`, `total cost time`.
+
+
+## WASM
+### Compile
+Compile the project by running:
+```bash
+./scripts/x_compile.sh wasm
+```
+
+

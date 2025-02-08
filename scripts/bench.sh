@@ -16,4 +16,5 @@ do
     ./scripts/simulate_network.sh $interface $bandwith $delay
 
     $1 $2 $3 $4 $request_size $response_size
+    sleep 5
 done

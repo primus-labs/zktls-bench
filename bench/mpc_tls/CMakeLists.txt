@@ -4,7 +4,7 @@ set(NAME "mpc_tls_bench")
 
 macro (add_test_executable_with_lib _name libs)
     add_executable(test_${_name} "${_name}.cpp")
-    target_link_libraries(test_${_name} ${OTLS_LIBRARIES} ${EMP-TOOL_LIBRARIES} ${EMP-OT_LIBRARIES} ${EMP-ZK_LIBRARIES})
+    target_link_libraries(test_${_name} io ${OTLS_LIBRARIES} ${EMP-TOOL_LIBRARIES} ${EMP-OT_LIBRARIES} ${EMP-ZK_LIBRARIES})
 IF(ENABLE_WASM)
     target_compile_options(test_${_name} PRIVATE -sEXPORTED_FUNCTIONS=_main)
 ENDIF()

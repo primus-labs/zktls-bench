@@ -38,6 +38,8 @@ ELSE()
   find_package(otls REQUIRED)
 ENDIF()
 include_directories(${OTLS_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/network)
 
+add_subdirectory(network)
 add_subdirectory(mpc_tls)
 add_subdirectory(proxy_tls)

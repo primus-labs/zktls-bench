@@ -16,6 +16,7 @@
 #include <sys/resource.h>
 #include <mach/mach.h>
 #endif
+#include "websocket_io_channel.h"
 #include "helper.h"
 #include <json.hpp>
 using json = nlohmann::ordered_json;
@@ -31,7 +32,7 @@ const int threads = 1;
 template <typename IO>
 void full_protocol(IO* io, IO* io_opt, COT<IO>* cot, int party) {
     EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
-    HandShake<NetIO>* hs = new HandShake<NetIO>(io, io_opt, cot, group);
+    HandShake<WebSocketIO>* hs = new HandShake<WebSocketIO>(io, io_opt, cot, group);
 
     EC_POINT* V = EC_POINT_new(group);
     EC_POINT* Tc = EC_POINT_new(group);
@@ -175,7 +176,7 @@ void full_protocol(IO* io, IO* io_opt, COT<IO>* cot, int party) {
 }
 
 string result;
-PORT_FUNCTION(const char*) _main(const char* args) {
+void do_main(const string& args) {
     json j = json::parse(args);
     string partyStr = j["party"];
     string portStr = j["port"];
@@ -187,19 +188,33 @@ PORT_FUNCTION(const char*) _main(const char* args) {
     int port = atoi(portStr.c_str());
     QUERY_BYTE_LEN = atoi(requestSizeStr.c_str());
     RESPONSE_BYTE_LEN = atoi(responseSizeStr.c_str());
-    NetIO* io = new NetIO(party == ALICE ? nullptr : ip.c_str(), port);
-    NetIO* io_opt = new NetIO(party == ALICE ? nullptr : ip.c_str(), port + 1);
+    printf("_main:%s\n", args.c_str());
+    WebSocketIO* io = nullptr;
+    WebSocketIO* io_opt = nullptr;
+    if (party == ALICE) {
+        io = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port)).c_str());
+        io->Init();
+        io_opt = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port + 1)).c_str());
+        io_opt->Init();
+    }
+    else {
+        io = new WebSocketIO(port);
+        io->Init();
+        io_opt = new WebSocketIO(port + 1);
+        io_opt->Init();
+    }
+    printf("io created\n");
 
-    BoolIO<NetIO>* ios[threads];
+    BoolIO<WebSocketIO>* ios[threads];
     for (int i = 0; i < threads; i++)
-        ios[i] = new BoolIO<NetIO>(io, party == ALICE);
+        ios[i] = new BoolIO<WebSocketIO>(io, party == ALICE);
 
     auto start = emp::clock_start();
-    setup_protocol<NetIO>(io, ios, threads, party);
+    setup_protocol<WebSocketIO>(io, ios, threads, party);
     cout << "setup time: " << emp::time_from(start) << " us" << endl;
-    auto prot = (PrimusParty<NetIO>*)(ProtocolExecution::prot_exec);
-    IKNP<NetIO>* cot = prot->ot;
-    full_protocol<NetIO>(io, io_opt, cot, party);
+    auto prot = (PrimusParty<WebSocketIO>*)(ProtocolExecution::prot_exec);
+    IKNP<WebSocketIO>* cot = prot->ot;
+    full_protocol<WebSocketIO>(io, io_opt, cot, party);
 
     cout << "gc AND gates: " << dec << gc_circ_buf->num_and() << endl;
     cout << "zk AND gates: " << dec << zk_circ_buf->num_and() << endl;
@@ -236,12 +251,17 @@ PORT_FUNCTION(const char*) _main(const char* args) {
         {"totalCost", emp::time_from(start) / 1e3}
     };
 
-    delete io;
-    delete io_opt;
     for (int i = 0; i < threads; i++) {
         delete ios[i];
     }
+    delete io;
+    delete io_opt;
     result = j2.dump();
+}
+
+PORT_FUNCTION(const char*) _main(const char* args) {
+    std::thread t(do_main, string(args));
+    t.detach();
     return result.c_str();
 }
 
@@ -259,7 +279,8 @@ int main(int argc, char** argv) {
         {"requestSize", argv[4]},
         {"responseSize", argv[5]}
     };
-    const char* s = _main(j.dump().c_str());
+    do_main(j.dump());
+    const char* s = result.c_str();
     printf("result:%s\n", s);
 
     json j2 = json::parse(s);

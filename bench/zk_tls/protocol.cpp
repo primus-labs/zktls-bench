@@ -257,7 +257,7 @@ string test_protocol(const string& args) {
     json j2 = {
         {"requestSize", QUERY_BYTE_LEN},
         {"responseSize", RESPONSE_BYTE_LEN},
-        {"sendBytes", ((totalCounter) * 1.0) / 1024},
+        {"sendBytes", totalCounter / 1024},
         {"totalCost", emp::time_from(start0) / 1e3}
     };
 

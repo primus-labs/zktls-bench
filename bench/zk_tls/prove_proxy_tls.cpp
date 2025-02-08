@@ -13,6 +13,9 @@
 #include <sys/resource.h>
 #include <mach/mach.h>
 #endif
+#include "websocket_io_channel.h"
+#include <json.hpp>
+using json = nlohmann::ordered_json;
 
 using namespace std;
 using namespace emp;
@@ -118,19 +121,33 @@ bool prove_proxy_tls(int party) {
 }
 
 const int threads = 1;
-int main(int argc, char** argv) {
-    int port, party;
-    party = atoi(argv[1]);
-    port = atoi(argv[3]);
-    QUERY_BYTE_LEN = atoi(argv[4]);
-    RESPONSE_BYTE_LEN = atoi(argv[5]);
-    NetIO* io[threads];
+string test_prove_proxy_tls(const string& args) {
+    json j = json::parse(args);
+    string partyStr = j["party"];
+    string portStr = j["port"];
+    string requestSizeStr = j["requestSize"];
+    string responseSizeStr = j["responseSize"];
+    string ip = j["ip"];
+
+    int party = atoi(partyStr.c_str());
+    int port = atoi(portStr.c_str());
+    QUERY_BYTE_LEN = atoi(requestSizeStr.c_str());
+    RESPONSE_BYTE_LEN = atoi(responseSizeStr.c_str());
+    printf("_main:%s\n", args.c_str());
+    WebSocketIO* io[threads];
     for (int i = 0; i < threads; i++) {
-        io[i] = new NetIO(party == ALICE ? nullptr : argv[2], port + i);
+        if (party == ALICE) {
+            io[i] = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port + i)).c_str());
+            io[i]->Init();
+        }
+        else {
+            io[i] = new WebSocketIO(port + i);
+            io[i]->Init();
+        }
     }
-    BoolIO<NetIO>* ios[threads];
+    BoolIO<WebSocketIO>* ios[threads];
     for (int i = 0; i < threads; i++)
-        ios[i] = new BoolIO<NetIO>(io[i], party == ALICE);
+        ios[i] = new BoolIO<WebSocketIO>(io[i], party == ALICE);
 
     auto start = emp::clock_start();
     auto comm = io[0]->counter;
@@ -150,7 +167,7 @@ int main(int argc, char** argv) {
 
     cout << "zk AND gates: " << CircuitExecution::circ_exec->num_and() << endl;
 
-    bool cheated = finalize_proxy_protocol<BoolIO<NetIO>>();
+    bool cheated = finalize_proxy_protocol<BoolIO<WebSocketIO>>();
     if (cheated)
         error("cheated\n");
 
@@ -174,16 +191,16 @@ int main(int argc, char** argv) {
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
 
-    char filename[256];
-    sprintf(filename, "output_%s.csv", argv[1]); 
-    FILE* fp = fopen(filename, "a");
-    fprintf(fp, "%d,%d,%.3f KBytes,%.3f ms\n", (int)QUERY_BYTE_LEN, (int)RESPONSE_BYTE_LEN, ((io[0]->counter) * 1.0) / 1024, emp::time_from(start) / 1e3);
-    fclose(fp);
-
+    json j2 = {
+        {"requestSize", QUERY_BYTE_LEN},
+        {"responseSize", RESPONSE_BYTE_LEN},
+        {"sendBytes", ((io[0]->counter) * 1.0) / 1024},
+        {"totalCost", emp::time_from(start) / 1e3}
+    };
     for (int i = 0; i < threads; ++i) {
-        delete ios[i]->io;
         delete ios[i];
+        delete io[i];
     }
 
-    return 0;
+    return j2.dump();
 }

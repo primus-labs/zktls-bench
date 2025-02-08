@@ -16,6 +16,9 @@
 #include <sys/resource.h>
 #include <mach/mach.h>
 #endif
+#include "websocket_io_channel.h"
+#include <json.hpp>
+using json = nlohmann::ordered_json;
 
 using namespace std;
 using namespace emp;
@@ -183,29 +186,44 @@ void full_protocol(HandShake<IO>* hs, IO* io, IO* io_opt, COT<IO>* cot, int part
     EC_GROUP_free(group);
 }
 
-int main(int argc, char** argv) {
-    if (argc < 5) {
-        printf("usage: %s $party $port $request_size $response_size\n", argv[0]);
-        exit(1);
-    }
-    int port, party;
-    party = atoi(argv[1]);
-    port = atoi(argv[3]);
-    QUERY_BYTE_LEN = atoi(argv[3]);
-    RESPONSE_BYTE_LEN = atoi(argv[4]);
-    NetIO* io = new NetIO(party == ALICE ? nullptr : argv[2], port);
-    NetIO* io_opt = new NetIO(party == ALICE ? nullptr : argv[2], port + 1);
+string test_prot_on_off(const string& args) {
+    json j = json::parse(args);
+    string partyStr = j["party"];
+    string portStr = j["port"];
+    string requestSizeStr = j["requestSize"];
+    string responseSizeStr = j["responseSize"];
+    string ip = j["ip"];
 
-    BoolIO<NetIO>* ios[threads];
+    int party = atoi(partyStr.c_str());
+    int port = atoi(portStr.c_str());
+    QUERY_BYTE_LEN = atoi(requestSizeStr.c_str());
+    RESPONSE_BYTE_LEN = atoi(responseSizeStr.c_str());
+    printf("_main:%s\n", args.c_str());
+    WebSocketIO* io = nullptr;
+    WebSocketIO* io_opt = nullptr;
+    if (party == ALICE) {
+        io = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port)).c_str());
+        io->Init();
+        io_opt = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port + 1)).c_str());
+        io_opt->Init();
+    }
+    else {
+        io = new WebSocketIO(port);
+        io->Init();
+        io_opt = new WebSocketIO(port + 1);
+        io_opt->Init();
+    }
+
+    BoolIO<WebSocketIO>* ios[threads];
     for (int i = 0; i < threads; i++)
-        ios[i] = new BoolIO<NetIO>(io, party == ALICE);
+        ios[i] = new BoolIO<WebSocketIO>(io, party == ALICE);
 
     EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
 
     auto start = emp::clock_start();
     auto comm = io->counter;
-    setup_protocol<NetIO>(io, ios, threads, party, true);
-    // setup_protocol<NetIO>(io, ios, threads, party);
+    setup_protocol<WebSocketIO>(io, ios, threads, party, true);
+    // setup_protocol<WebSocketIO>(io, ios, threads, party);
 
     cout << "setup time: " << emp::time_from(start) << " us" << endl;
     cout << "setup comm: " << io->counter << endl;
@@ -213,20 +231,20 @@ int main(int argc, char** argv) {
     start = clock_start();
     comm = io->counter;
 
-    auto prot = (PrimusParty<NetIO>*)(gc_prot_buf);
-    IKNP<NetIO>* cot = prot->ot;
-    HandShake<NetIO>* hs = new HandShake<NetIO>(io, io_opt, cot, group);
+    auto prot = (PrimusParty<WebSocketIO>*)(gc_prot_buf);
+    IKNP<WebSocketIO>* cot = prot->ot;
+    HandShake<WebSocketIO>* hs = new HandShake<WebSocketIO>(io, io_opt, cot, group);
 
     full_protocol_offline();
     hs->compute_pms_offline(party);
 
-    switch_to_online<NetIO>(party);
+    switch_to_online<WebSocketIO>(party);
     cout << "offline time: " << emp::time_from(start) << " us" << endl;
     cout << "offline comm: " << io->counter - comm << endl;
 
     start = emp::clock_start();
     comm = io->counter;
-    full_protocol<NetIO>(hs, io, io_opt, cot, party);
+    full_protocol<WebSocketIO>(hs, io, io_opt, cot, party);
     cout << "online time: " << emp::time_from(start) << " us" << endl;
     cout << "online comm: " << io->counter - comm << endl;
 
@@ -258,16 +276,17 @@ int main(int argc, char** argv) {
     cout << "comm: " << ((io->counter) * 1.0) / 1024 << " KBytes" << endl;
     cout << "total time: " << emp::time_from(start) << " us" << endl;
 
-    char filename[256];
-    sprintf(filename, "output_%s.csv", argv[1]); 
-    FILE* fp = fopen(filename, "a");
-    fprintf(fp, "%d,%d,%.3f KBytes,%.3f ms\n", (int)QUERY_BYTE_LEN, (int)RESPONSE_BYTE_LEN, ((io->counter) * 1.0) / 1024, emp::time_from(start) / 1e3);
-    fclose(fp);
-    
-    delete io;
+    json j2 = {
+        {"requestSize", QUERY_BYTE_LEN},
+        {"responseSize", RESPONSE_BYTE_LEN},
+        {"sendBytes", ((io->counter) * 1.0) / 1024},
+        {"totalCost", emp::time_from(start) / 1e3}
+    };
+
     for (int i = 0; i < threads; i++) {
         delete ios[i];
     }
+    delete io;
     delete io_opt;
-    return 0;
+    return j2.dump();
 }

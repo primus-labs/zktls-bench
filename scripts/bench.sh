@@ -15,6 +15,6 @@ do
     echo "$bandwith#$delay#$request_size#$response_size"
     ./scripts/simulate_network.sh $interface $bandwith $delay
 
-    $1 $2 $3 $4 $request_size $response_size
+    ./build/cpp/bench/bin/zktls_bench $1 $2 $3 $4 $request_size $response_size
     sleep 5
 done

@@ -17,7 +17,6 @@
 #include <mach/mach.h>
 #endif
 #include "websocket_io_channel.h"
-#include "helper.h"
 #include <json.hpp>
 using json = nlohmann::ordered_json;
 
@@ -175,8 +174,7 @@ void full_protocol(IO* io, IO* io_opt, COT<IO>* cot, int party) {
     EC_GROUP_free(group);
 }
 
-string result;
-void do_main(const string& args) {
+string test_protocol(const string& args) {
     json j = json::parse(args);
     string partyStr = j["party"];
     string portStr = j["port"];
@@ -203,7 +201,6 @@ void do_main(const string& args) {
         io_opt = new WebSocketIO(port + 1);
         io_opt->Init();
     }
-    printf("io created\n");
 
     BoolIO<WebSocketIO>* ios[threads];
     for (int i = 0; i < threads; i++)
@@ -256,45 +253,6 @@ void do_main(const string& args) {
     }
     delete io;
     delete io_opt;
-    result = j2.dump();
-}
-
-PORT_FUNCTION(const char*) _main(const char* args) {
-    std::thread t(do_main, string(args));
-    t.detach();
-    return result.c_str();
-}
-
-int main(int argc, char** argv) {
-#ifndef __EMSCRIPTEN__
-    if (argc < 5) {
-        printf("usage: %s $party $port $request_size $response_size\n", argv[0]);
-        exit(1);
-    }
-
-    json j = {
-        {"party", argv[1]},
-        {"ip", argv[2]},
-        {"port", argv[3]},
-        {"requestSize", argv[4]},
-        {"responseSize", argv[5]}
-    };
-    do_main(j.dump());
-    const char* s = result.c_str();
-    printf("result:%s\n", s);
-
-    json j2 = json::parse(s);
-    int requestSize = j2["requestSize"];
-    int responseSize = j2["responseSize"];
-    double sendBytes = j2["sendBytes"];
-    double totalCost = j2["totalCost"];
-
-    char filename[256];
-    sprintf(filename, "output_%s.csv", argv[1]); 
-    FILE* fp = fopen(filename, "a");
-    fprintf(fp, "%d,%d,%.3f,%.3f\n", requestSize, responseSize, sendBytes, totalCost);
-    fclose(fp);
-#endif
-    return 0;
+    return j2.dump();
 }
 

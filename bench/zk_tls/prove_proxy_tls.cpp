@@ -16,6 +16,7 @@
 #include "websocket_io_channel.h"
 #include <json.hpp>
 using json = nlohmann::ordered_json;
+#include "bench.h"
 
 using namespace std;
 using namespace emp;
@@ -136,20 +137,12 @@ string test_prove_proxy_tls(const string& args) {
     QUERY_BYTE_LEN = atoi(requestSizeStr.c_str());
     RESPONSE_BYTE_LEN = atoi(responseSizeStr.c_str());
     printf("_main:%s\n", args.c_str());
-    WebSocketIO* io[threads];
+    PrimusIO* io[threads];
+    BoolIO<PrimusIO>* ios[threads];
     for (int i = 0; i < threads; i++) {
-        if (party == ALICE) {
-            io[i] = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port + i)).c_str());
-            io[i]->Init();
-        }
-        else {
-            io[i] = new WebSocketIO(port + i);
-            io[i]->Init();
-        }
+        io[i] = createPrimusIO(party == ALICE, ip, port + i);
+        ios[i] = new BoolIO<PrimusIO>(io[i], party == ALICE);
     }
-    BoolIO<WebSocketIO>* ios[threads];
-    for (int i = 0; i < threads; i++)
-        ios[i] = new BoolIO<WebSocketIO>(io[i], party == ALICE);
 
     auto start = emp::clock_start();
     auto start0 = start;
@@ -170,7 +163,7 @@ string test_prove_proxy_tls(const string& args) {
 
     cout << "zk AND gates: " << CircuitExecution::circ_exec->num_and() << endl;
 
-    bool cheated = finalize_proxy_protocol<BoolIO<WebSocketIO>>();
+    bool cheated = finalize_proxy_protocol<BoolIO<PrimusIO>>();
     if (cheated)
         error("cheated\n");
 
@@ -182,8 +175,8 @@ string test_prove_proxy_tls(const string& args) {
     if (!getrusage(RUSAGE_SELF, &rusage)) {
         std::cout << "[Linux]Peak resident set size: " << (size_t)rusage.ru_maxrss
                   << std::endl;
-		memory = rusage.ru_maxrss;
-	}
+        memory = rusage.ru_maxrss;
+    }
     else
         std::cout << "[Linux]Query RSS failed" << std::endl;
 #elif defined(__APPLE__)
@@ -193,8 +186,8 @@ string test_prove_proxy_tls(const string& args) {
         KERN_SUCCESS) {
         std::cout << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max
                   << std::endl;
-		memory = info.resident_size_max;
-	}
+        memory = info.resident_size_max;
+    }
     else
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
@@ -208,7 +201,7 @@ string test_prove_proxy_tls(const string& args) {
         {"responseSize", RESPONSE_BYTE_LEN},
         {"sendBytes", totalCounter / 1024},
         {"totalCost", emp::time_from(start0) / 1e3},
-		{"memory", memory}
+        {"memory", memory}
     };
     for (int i = 0; i < threads; ++i) {
         delete ios[i];

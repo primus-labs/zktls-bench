@@ -19,6 +19,7 @@
 #include "websocket_io_channel.h"
 #include <json.hpp>
 using json = nlohmann::ordered_json;
+#include "bench.h"
 
 using namespace std;
 using namespace emp;
@@ -31,7 +32,7 @@ const int threads = 4;
 template <typename IO>
 void full_protocol(IO* io, IO* io_opt, COT<IO>* cot, int party) {
     EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
-    HandShake<WebSocketIO>* hs = new HandShake<WebSocketIO>(io, io_opt, cot, group);
+    HandShake<PrimusIO>* hs = new HandShake<PrimusIO>(io, io_opt, cot, group);
 
     EC_POINT* V = EC_POINT_new(group);
     EC_POINT* Tc = EC_POINT_new(group);
@@ -187,39 +188,23 @@ string test_protocol(const string& args) {
     QUERY_BYTE_LEN = atoi(requestSizeStr.c_str());
     RESPONSE_BYTE_LEN = atoi(responseSizeStr.c_str());
     printf("_main:%s\n", args.c_str());
-    WebSocketIO* io_opt = nullptr;
-    if (party == ALICE) {
-        io_opt = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port + threads)).c_str());
-        io_opt->Init();
-    }
-    else {
-        io_opt = new WebSocketIO(port + threads);
-        io_opt->Init();
-    }
+    PrimusIO* io_opt = createPrimusIO(party == ALICE, ip, port + threads);
 
-    BoolIO<WebSocketIO>* ios[threads];
-    WebSocketIO* io[threads];
+    BoolIO<PrimusIO>* ios[threads];
+    PrimusIO* io[threads];
     for (int i = 0; i < threads; i++) {
-        if (party == ALICE) {
-            io[i] = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port + i)).c_str());
-            io[i]->Init();
-        }
-        else {
-            io[i] = new WebSocketIO(port + i);
-            io[i]->Init();
-        }
-
-        ios[i] = new BoolIO<WebSocketIO>(io[i], party == ALICE);
+        io[i] = createPrimusIO(party == ALICE, ip, port + i);
+        ios[i] = new BoolIO<PrimusIO>(io[i], party == ALICE);
     }
-    WebSocketIO* io0 = io[0];
+    PrimusIO* io0 = io[0];
 
     auto start = emp::clock_start();
     auto start0 = start;
-    setup_protocol<WebSocketIO>(io0, ios, threads, party);
+    setup_protocol<PrimusIO>(io0, ios, threads, party);
     cout << "setup time: " << emp::time_from(start) << " us" << endl;
-    auto prot = (PrimusParty<WebSocketIO>*)(ProtocolExecution::prot_exec);
-    IKNP<WebSocketIO>* cot = prot->ot;
-    full_protocol<WebSocketIO>(io0, io_opt, cot, party);
+    auto prot = (PrimusParty<PrimusIO>*)(ProtocolExecution::prot_exec);
+    IKNP<PrimusIO>* cot = prot->ot;
+    full_protocol<PrimusIO>(io0, io_opt, cot, party);
 
     cout << "gc AND gates: " << dec << gc_circ_buf->num_and() << endl;
     cout << "zk AND gates: " << dec << zk_circ_buf->num_and() << endl;
@@ -235,8 +220,8 @@ string test_protocol(const string& args) {
     if (!getrusage(RUSAGE_SELF, &rusage)) {
         std::cout << "[Linux]Peak resident set size: " << (size_t)rusage.ru_maxrss
                   << std::endl;
-		memory = rusage.ru_maxrss;
-	}
+        memory = rusage.ru_maxrss;
+    }
     else
         std::cout << "[Linux]Query RSS failed" << std::endl;
 #elif defined(__APPLE__)
@@ -246,8 +231,8 @@ string test_protocol(const string& args) {
         KERN_SUCCESS) {
         std::cout << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max
                   << std::endl;
-		memory = info.resident_size_max;
-	}
+        memory = info.resident_size_max;
+    }
     else
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
@@ -264,7 +249,7 @@ string test_protocol(const string& args) {
         {"responseSize", RESPONSE_BYTE_LEN},
         {"sendBytes", totalCounter / 1024},
         {"totalCost", emp::time_from(start0) / 1e3},
-		{"memory", memory}
+        {"memory", memory}
     };
 
     for (int i = 0; i < threads; i++) {

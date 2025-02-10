@@ -90,7 +90,7 @@ bool prove_proxy_tls(int party) {
         }
 
         // prove http request
-        if (0)
+#if 0
         {
             unsigned char* buf = new unsigned char[QUERY_BYTE_LEN];
             memcpy(buf, http_msg_req, QUERY_BYTE_LEN);
@@ -103,6 +103,7 @@ bool prove_proxy_tls(int party) {
             }
             delete[] buf;
         }
+#endif
         // prove http response 
         {
             unsigned char* buf = new unsigned char[RESPONSE_BYTE_LEN];
@@ -175,20 +176,25 @@ string test_prove_proxy_tls(const string& args) {
 
     cout << "prove time: " << emp::time_from(start) << " us" << endl;
     cout << "prove comm: " << (io[0]->counter - comm) * 1.0 / 1024 << " Kbytes" << endl;
+    size_t memory = 0;
 #if defined(__linux__)
     struct rusage rusage;
-    if (!getrusage(RUSAGE_SELF, &rusage))
+    if (!getrusage(RUSAGE_SELF, &rusage)) {
         std::cout << "[Linux]Peak resident set size: " << (size_t)rusage.ru_maxrss
                   << std::endl;
+		memory = rusage.ru_maxrss;
+	}
     else
         std::cout << "[Linux]Query RSS failed" << std::endl;
 #elif defined(__APPLE__)
     struct mach_task_basic_info info;
     mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
     if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) ==
-        KERN_SUCCESS)
+        KERN_SUCCESS) {
         std::cout << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max
                   << std::endl;
+		memory = info.resident_size_max;
+	}
     else
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
@@ -201,7 +207,8 @@ string test_prove_proxy_tls(const string& args) {
         {"requestSize", QUERY_BYTE_LEN},
         {"responseSize", RESPONSE_BYTE_LEN},
         {"sendBytes", totalCounter / 1024},
-        {"totalCost", emp::time_from(start0) / 1e3}
+        {"totalCost", emp::time_from(start0) / 1e3},
+		{"memory", memory}
     };
     for (int i = 0; i < threads; ++i) {
         delete ios[i];

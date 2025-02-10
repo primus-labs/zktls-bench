@@ -229,20 +229,25 @@ string test_protocol(const string& args) {
     if (cheat)
         error("cheat!\n");
 
+    size_t memory = 0;
 #if defined(__linux__)
     struct rusage rusage;
-    if (!getrusage(RUSAGE_SELF, &rusage))
+    if (!getrusage(RUSAGE_SELF, &rusage)) {
         std::cout << "[Linux]Peak resident set size: " << (size_t)rusage.ru_maxrss
                   << std::endl;
+		memory = rusage.ru_maxrss;
+	}
     else
         std::cout << "[Linux]Query RSS failed" << std::endl;
 #elif defined(__APPLE__)
     struct mach_task_basic_info info;
     mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
     if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) ==
-        KERN_SUCCESS)
+        KERN_SUCCESS) {
         std::cout << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max
                   << std::endl;
+		memory = info.resident_size_max;
+	}
     else
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
@@ -258,7 +263,8 @@ string test_protocol(const string& args) {
         {"requestSize", QUERY_BYTE_LEN},
         {"responseSize", RESPONSE_BYTE_LEN},
         {"sendBytes", totalCounter / 1024},
-        {"totalCost", emp::time_from(start0) / 1e3}
+        {"totalCost", emp::time_from(start0) / 1e3},
+		{"memory", memory}
     };
 
     for (int i = 0; i < threads; i++) {

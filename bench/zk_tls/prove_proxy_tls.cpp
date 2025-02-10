@@ -196,10 +196,21 @@ string test_prove_proxy_tls(const string& args) {
     for (int i = 0; i < threads; i++) {
         totalCounter += io[i]->counter;
     }
+    uint32_t recvCounter = totalCounter;
+    if (party == ALICE) {
+        io[0]->recv_data(&recvCounter, sizeof(recvCounter));
+    }
+    else {
+        io[0]->send_data(&recvCounter, sizeof(recvCounter));
+        io[0]->flush();
+        recvCounter = 0;
+    }
+    
     json j2 = {
         {"requestSize", QUERY_BYTE_LEN},
         {"responseSize", RESPONSE_BYTE_LEN},
-        {"sendBytes", totalCounter / 1024},
+        {"sendBytes", totalCounter},
+        {"recvBytes", recvCounter},
         {"totalCost", emp::time_from(start0) / 1e3},
         {"memory", memory}
     };

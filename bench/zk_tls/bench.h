@@ -1,7 +1,7 @@
 #include <string>
 using namespace std;
 
-#define USE_WEBSOCKET_IO 0 
+#define USE_WEBSOCKET_IO 1 
 
 #if USE_WEBSOCKET_IO
 #include "websocket_io_channel.h"

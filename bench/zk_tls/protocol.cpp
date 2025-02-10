@@ -243,11 +243,21 @@ string test_protocol(const string& args) {
     totalCounter += io_opt->counter;
     cout << "comm: " << ((totalCounter) * 1.0) / 1024 << " KBytes" << endl;
     cout << "total time: " << emp::time_from(start0) << " us" << endl;
+    uint32_t recvCounter = totalCounter;
+    if (party == ALICE) {
+        io[0]->recv_data(&recvCounter, sizeof(recvCounter));
+    }
+    else {
+        io[0]->send_data(&recvCounter, sizeof(recvCounter));
+        io[0]->flush();
+        recvCounter = 0;
+    }
     
     json j2 = {
         {"requestSize", QUERY_BYTE_LEN},
         {"responseSize", RESPONSE_BYTE_LEN},
-        {"sendBytes", totalCounter / 1024},
+        {"sendBytes", totalCounter},
+        {"recvBytes", recvCounter},
         {"totalCost", emp::time_from(start0) / 1e3},
         {"memory", memory}
     };

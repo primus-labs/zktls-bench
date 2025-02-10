@@ -51,9 +51,10 @@ for line in $(cat ${cfgfile}); do
 
   res=$(cat $logfile | grep DONE:)
   send_bytes=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="sendBytes") {print $(i+2)}}}')
+  recv_bytes=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="recvBytes") {print $(i+2)}}}')
   total_cost=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="totalCost") {print $(i+2)}}}')
 
-  echo "$kind,$program,$bandwith,$delay,$request_size,$response_size,$send_bytes,$total_cost" >>$resfile
+  echo "$kind,$program,$bandwith,$delay,$request_size,$response_size,$send_bytes,$recv_bytes,$total_cost" >>$resfile
   sleep 4
 
   ./scripts/reset_network.sh $interface

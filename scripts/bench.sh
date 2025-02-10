@@ -12,6 +12,14 @@ kind=native
 if [ $# -ge 6 ]; then
   kind=$6
 fi
+if [ "$party" = "2" ] && [ "$kind" != "native" ]; then
+  echo "party 2 only supports native"
+  exit 1
+fi
+if [ "$kind" != "native" ] && [ "$kind" != "wasm" ]; then
+  echo "\$kind only supports native or wasm"
+  exit 1
+fi
 
 curdir=$(pwd)
 

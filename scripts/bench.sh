@@ -28,7 +28,7 @@ mkdir -p ${logdir}
 cfgfile=${curdir}/config/config
 resfile=${curdir}/result-$party.csv
 if [ ! -f "$resfile" ]; then
-  echo "kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(KB),cost(ms)" >$resfile
+  echo "kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)" >$resfile
 fi
 
 CMD="./build/cpp/bench/bin/zktls_bench"
@@ -53,8 +53,9 @@ for line in $(cat ${cfgfile}); do
   send_bytes=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="sendBytes") {print $(i+2)}}}')
   recv_bytes=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="recvBytes") {print $(i+2)}}}')
   total_cost=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="totalCost") {print $(i+2)}}}')
+  memory=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="memory") {print $(i+2)}}}')
 
-  echo "$kind,$program,$bandwith,$delay,$request_size,$response_size,$send_bytes,$recv_bytes,$total_cost" >>$resfile
+  echo "$kind,$program,$bandwith,$delay,$request_size,$response_size,$send_bytes,$recv_bytes,$total_cost,$memory" >>$resfile
   sleep 4
 
   ./scripts/reset_network.sh $interface

@@ -38,7 +38,7 @@ For `proxy-tls` model, the bench program is `test_prove_proxy_tls`. The same way
 
 ### Result
 
-Bench result is outputed in `result-${party}.csv`. The columns are `kind`,`name`,`bandwith(Mbps)`,`latency(ms)`,`request_size(B)`,`response_size(B)`,`send_bytes(KB)`,`cost(ms)`.
+Bench result is outputed in `result-${party}.csv`. The columns are `kind`,`name`,`bandwith(Mbps)`,`latency(ms)`,`request_size(B)`,`response_size(B)`,`send_bytes(B)`,`recv_bytes(B)`,`cost(ms)`,memory(KB).
 
 
 ## WASM

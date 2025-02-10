@@ -7,3 +7,6 @@
 [submodule "3rd/primus-emp"]
 	path = 3rd/primus-emp
 	url = git@github.com:primus-labs/primus-emp.git
+[submodule "3rd/tlsn"]
+	path = 3rd/tlsn
+	url = git@github.com:tlsnotary/tlsn.git

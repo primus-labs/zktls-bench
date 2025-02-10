@@ -90,6 +90,7 @@ bool prove_proxy_tls(int party) {
         }
 
         // prove http request
+        if (0)
         {
             unsigned char* buf = new unsigned char[QUERY_BYTE_LEN];
             memcpy(buf, http_msg_req, QUERY_BYTE_LEN);

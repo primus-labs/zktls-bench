@@ -62,6 +62,18 @@ const puppeteer = require('puppeteer');
     }, 500);
   });
 
+  await page.evaluate(() => {
+    if (window.performance && window.performance.memory) {
+      const memStat = {
+        "usedJSHeapSize": window.performance.memory.usedJSHeapSize,
+        "totalJSHeapSize": window.performance.memory.totalJSHeapSize
+      };
+      console.log("memStat:", JSON.stringify(memStat))
+    } else {
+      console.log('Memory API is not supported.');
+    }
+  });
+
   await browser.close();
 })();
 

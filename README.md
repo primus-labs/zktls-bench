@@ -43,6 +43,15 @@ Bench result is outputed in `result-${party}.csv`. The columns are `kind`,`name`
 
 ## WASM
 
+(Optional) You should first install chrome if you plan to run on a server (NOT DESKTOP) by runing: (for example on ubuntu server)
+
+```sh
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt-get install -f
+sudo dpkg -i google-chrome-stable_current_amd64.deb
+```
+
+
 ### Compile
 
 Reference [emsdk](https://emscripten.org/docs/getting_started/downloads.html) to install emcc.

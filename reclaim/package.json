@@ -1,0 +1,27 @@
+{
+  "name": "reclaim",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && tsc-alias",
+    "download:zk-files": "node node_modules/@reclaimprotocol/zk-symmetric-crypto/lib/scripts/download-files"
+  },
+  "files": [
+    "lib/*"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@reclaimprotocol/attestor-core": "^4.0.0"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.2",
+    "tsc-alias": "^1.8.10",
+    "tsconfig-paths-webpack-plugin": "^4.2.0",
+    "typescript": "^5.7.3",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
+  }
+}

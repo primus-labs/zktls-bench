@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "node16",
+    "allowJs": true,
+    "checkJs": false,
+    "outDir": "lib",
+    "strict": false,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "resolveJsonModule": true,
+    "inlineSourceMap": true,
+    "lib": [
+      "es2021",
+      "DOM"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "src/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "src/*.ts",
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

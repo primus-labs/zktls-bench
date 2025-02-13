@@ -14,7 +14,7 @@ import { logger, uint8ArrayToStr } from '@reclaimprotocol/attestor-core/lib/util
  * Eg. to claim the email address "abcd@mock.com", the header
  * should be "Authorization: Bearer abcd".
  */
-export function createMockServer(port: number, repLength: number = 1) {
+export function createMockServer(port: number) {
   const tlsSessionStore: Record<string, Buffer> = {}
 
   const server = createServer(
@@ -31,10 +31,13 @@ export function createMockServer(port: number, repLength: number = 1) {
       return
     }
 
+    var repLength = 1
     req.on('data', (chunk) => {
+      console.log('req.headers', req.headers)
       console.log('headers.length', Buffer.byteLength(JSON.stringify(req.headers)))
       console.log('chunk.length', chunk.length)
-      console.log('req.headers', req.headers)
+      repLength = parseInt(req.headers['replength'] as string)
+      console.log('repLength', repLength)
     });
 
     if (!req.url?.startsWith('/me')) {

@@ -5,6 +5,7 @@
   "main": "lib/index",
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc-alias",
+    "build:browser": "bash ./build-browser.sh",
     "download:zk-files": "node node_modules/@reclaimprotocol/zk-symmetric-crypto/lib/scripts/download-files"
   },
   "files": [

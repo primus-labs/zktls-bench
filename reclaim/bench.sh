@@ -29,20 +29,29 @@ for rate in ${rates[@]}; do
         if [ "$party" = "2" ]; then
           node lib/start_attestor $port
         elif [ "$party" = "1" ]; then
-          zkengine='gnark'
-          if [ "$kind" = "wasm" ]; then
-            zkengine='snarkjs'
-          fi
           sudo iptables -D INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
           sudo iptables -D OUTPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
           sudo iptables -I INPUT -p tcp --dport $port -j ACCEPT
           sudo iptables -I OUTPUT -p tcp --sport $port -j ACCEPT
 
           logfile=logs/$kind-$rate-$delay-$request-$response.log
-          node lib/start_prover $ip $port $zkengine $request $response >$logfile 2>/dev/null
+          zkengine='gnark'
+          if [ "$kind" = "wasm" ]; then
+            zkengine='snarkjs'
+            node bench.js xx xx $ip $port $request $response >$logfile 2>/dev/null
+          elif [ "$kind" = "snarkjs" ]; then
+            zkengine='snarkjs'
+            node lib/start_prover $ip $port $zkengine $request $response >$logfile 2>/dev/null
+          else
+            node lib/start_prover $ip $port $zkengine $request $response >$logfile 2>/dev/null
+          fi
+
           res=$(cat $logfile | grep DONE:)
           cost=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="cost") {print $(i+2)}}}')
           memory=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="memory") {print $(i+2)}}}')
+          if [ "$kind" = "wasm" ]; then
+            memory=$(cat $logfile | grep memStat: | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="totalJSHeapSize") {print int($(i+2)/1024)}}}')
+          fi
           send_bytes=$(sudo iptables -L OUTPUT -v -n | grep ":${port}" | awk '{print $2}')
           recv_bytes=$(sudo iptables -L INPUT -v -n | grep ":${port}" | awk '{print $2}')
           sudo iptables -D INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null

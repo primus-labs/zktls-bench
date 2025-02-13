@@ -21,11 +21,7 @@ import { createMockServer } from './mock-provider-server'
 export async function startProver(
   attestorIp: string = 'localhost', attestorPort: number = 12345,
   zkEngine: ZKEngine = 'gnark', reqLength: number = 1024, repLength: number = 1024,
-  stratMock: boolean = false, mockUrl = 'https://localhost:17777/me') {
-  var mockHttpsServer: any;
-  if (stratMock) {
-    mockHttpsServer = createMockServer(17777, repLength)
-  }
+  mockUrl = 'https://localhost:17777/me') {
   // console.log("process.memoryUsage1", process.memoryUsage());
   // console.log("process.resourceUsage1", process.resourceUsage());
 
@@ -47,6 +43,9 @@ export async function startProver(
       url: claimUrl,
       method: 'POST',
       body: data,
+      headers: {
+        'replength': repLength.toString()
+      },
       responseRedactions: [],
       responseMatches: [
         {
@@ -80,9 +79,6 @@ export async function startProver(
   console.log(`DONE:${JSON.stringify(stat)}`);
 
   await client.terminateConnection()
-  if (stratMock && mockHttpsServer) {
-    mockHttpsServer.server.close()
-  }
 }
 
 async function test() {
@@ -91,16 +87,17 @@ async function test() {
   var zkEngine: ZKEngine = 'gnark'
   var reqLength = 1024
   var repLength = 1024
-  var stratMock = true;
   var mockUrl = `https://localhost:17777/me`
   if (typeof window !== 'undefined') {
-    attestorIp = "192.168.20.128"
+    attestorIp = "127.0.0.1"
     attestorPort = 12345
     zkEngine = 'snarkjs'
     reqLength = 1024
     repLength = 1024
-    stratMock = false;
-    mockUrl = `https://192.168.20.128:17777/me`
+    // note: if run desktop-browser-chrome.
+    // - use `python https_server.py` start the server 
+    // - set `–unsafely-treat-insecure-origin-as-secure=ws://127.0.0.1:12345`
+    mockUrl = `https://127.0.0.1:17777/me`
     // on browser
     console.log('on browser, see browser/index.html')
     return;
@@ -125,7 +122,7 @@ async function test() {
     }
   }
 
-  await startProver(attestorIp, attestorPort, zkEngine, reqLength, repLength, stratMock, mockUrl)
+  await startProver(attestorIp, attestorPort, zkEngine, reqLength, repLength, mockUrl)
 
 }
 test()

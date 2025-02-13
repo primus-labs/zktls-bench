@@ -27,9 +27,8 @@
       const zkEngine = 'snarkjs'
       const reqLength = param.requestSize
       const repLength = param.responseSize
-      const stratMock = false;
       const mockUrl = `https://127.0.0.1:17777/me`
-      startProver(attestorIp, attestorPort, zkEngine, reqLength, repLength, stratMock, mockUrl)
+      startProver(attestorIp, attestorPort, zkEngine, reqLength, repLength, mockUrl)
       console.log('startBench end:');
     }
   </script>

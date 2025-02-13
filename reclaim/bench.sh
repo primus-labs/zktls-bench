@@ -22,28 +22,30 @@ responses=(16 256 1024 2048)
 mkdir -p logs
 for rate in ${rates[@]}; do
   for delay in ${delays[@]}; do
-    sudo tc qdisc add dev $interface root netem rate ${rate}mbit delay ${delay}ms
+    if [ "$party" = "1" ]; then
+      sudo tc qdisc add dev $interface root netem rate ${rate}mbit delay ${delay}ms
+    fi
     for request in ${requests[@]}; do
       for response in ${responses[@]}; do
-        echo "kind: $kind rate: $rate delay: $delay request: $request response: $response"
         if [ "$party" = "2" ]; then
-          node lib/start_attestor $port
+          node lib/start_attestor $port >logs/2.log 2>&1
         elif [ "$party" = "1" ]; then
+          echo "kind: $kind rate: $rate delay: $delay request: $request response: $response"
           sudo iptables -D INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
           sudo iptables -D OUTPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
           sudo iptables -I INPUT -p tcp --dport $port -j ACCEPT
           sudo iptables -I OUTPUT -p tcp --sport $port -j ACCEPT
 
-          logfile=logs/$kind-$rate-$delay-$request-$response.log
+          logfile=logs/$party-$kind-$rate-$delay-$request-$response.log
           zkengine='gnark'
           if [ "$kind" = "wasm" ]; then
             zkengine='snarkjs'
-            node bench.js xx xx $ip $port $request $response >$logfile 2>/dev/null
+            node bench.js xx xx $ip $port $request $response >$logfile 2>&1
           elif [ "$kind" = "snarkjs" ]; then
             zkengine='snarkjs'
-            node lib/start_prover $ip $port $zkengine $request $response >$logfile 2>/dev/null
+            node lib/start_prover $ip $port $zkengine $request $response >$logfile 2>&1
           else
-            node lib/start_prover $ip $port $zkengine $request $response >$logfile 2>/dev/null
+            node lib/start_prover $ip $port $zkengine $request $response >$logfile 2>&1
           fi
 
           res=$(cat $logfile | grep DONE:)
@@ -66,7 +68,9 @@ for rate in ${rates[@]}; do
         # sleep 2
       done
     done
-    sudo tc qdisc del dev $interface root >/dev/null 2>&1
+    if [ "$party" = "1" ]; then
+      sudo tc qdisc del dev $interface root >/dev/null 2>&1
+    fi
     # sleep 1
   done
 done

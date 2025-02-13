@@ -8,15 +8,6 @@ npm run build
 npm run build:browser
 ```
 
-## Preparation
-
-Start a mock-localhost data server in the attestor side by:
-
-
-```sh
-node lib/start_provider [port]
-```
-
 ## (Optional) Use manually:
 
 ```sh

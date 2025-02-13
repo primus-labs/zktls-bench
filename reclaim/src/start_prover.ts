@@ -15,7 +15,6 @@ import { createClaimOnAttestor } from '@reclaimprotocol/attestor-core/lib/client
 import { ZKEngine } from '@reclaimprotocol/zk-symmetric-crypto'
 import { AttestorClient } from '@reclaimprotocol/attestor-core/lib/client/utils/client-socket'
 import { logger, uint8ArrayToStr } from '@reclaimprotocol/attestor-core/lib/utils'
-import { createMockServer } from './mock-provider-server'
 
 
 export async function startProver(

@@ -5,7 +5,7 @@ module.exports = {
 	entry: './src/index.ts',
 	target: 'web',
 	output: {
-		libraryTarget: 'commonjs2',
+		libraryTarget: 'umd',
 		filename: 'attestor.min.js',
 		path: process.env.BUNDLE_PATH
 			|| path.resolve(__dirname, 'browser/resources')

@@ -14,7 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@reclaimprotocol/attestor-core": "^4.0.0"
+    "@reclaimprotocol/attestor-core": "^4.0.0",
+    "puppeteer": "^24.2.0"
   },
   "devDependencies": {
     "ts-loader": "^9.5.2",

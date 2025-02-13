@@ -17,32 +17,15 @@ import { AttestorClient } from '@reclaimprotocol/attestor-core/lib/client/utils/
 import { logger, uint8ArrayToStr } from '@reclaimprotocol/attestor-core/lib/utils'
 import { createMockServer } from './mock-provider-server'
 
-async function test() {
 
-  // [ip] [port] [gnark|snarkjs] [request-length] [response-length]
-  const args = process.argv.slice(2)
-  var attestorIp = "localhost"
-  if (args.length > 0) {
-    attestorIp = args[0]
+export async function startProver(
+  attestorIp: string = 'localhost', attestorPort: number = 12345,
+  zkEngine: ZKEngine = 'gnark', reqLength: number = 1024, repLength: number = 1024,
+  stratMock: boolean = false, mockUrl = 'https://localhost:17777/me') {
+  var mockHttpsServer: any;
+  if (stratMock) {
+    mockHttpsServer = createMockServer(17777, repLength)
   }
-  var attestorPort = 12345
-  if (args.length > 1) {
-    attestorPort = parseInt(args[1])
-  }
-  var zkEngine: ZKEngine = 'gnark'
-  if (args.length > 2) {
-    if (args[2] == 'snarkjs') zkEngine = 'snarkjs';
-  }
-  var reqLength = 1
-  if (args.length > 3) {
-    reqLength = parseInt(args[3])
-  }
-  var repLength = 13
-  if (args.length > 4) {
-    repLength = parseInt(args[4])
-  }
-
-  const mockHttpsServer = createMockServer(17777, repLength)
   // console.log("process.memoryUsage1", process.memoryUsage());
   // console.log("process.resourceUsage1", process.resourceUsage());
 
@@ -54,7 +37,7 @@ async function test() {
   await client.waitForInit()
 
   const user = 'adhiraj'
-  const claimUrl = `https://localhost:17777/me`
+  const claimUrl = mockUrl
 
   const data = uint8ArrayToStr(new Uint8Array(reqLength))
   const start = +new Date()
@@ -82,17 +65,68 @@ async function test() {
   // console.log('claimUrl', claimUrl)
   // console.log('elapsed', +new Date() - start)
 
+  var memeory = 0
+  if (typeof window === 'undefined') {
+    memeory = process.memoryUsage().rss / 1024
+  }
+
   const stat = {
     ak: zkEngine,
     cost: +new Date() - start,
-    memory: process.memoryUsage().rss / 1024
+    memory: memeory
   }
   // console.log("process.memoryUsage2", process.memoryUsage());
   // console.log("process.resourceUsage2", process.resourceUsage());
   console.log(`DONE:${JSON.stringify(stat)}`);
 
   await client.terminateConnection()
-  mockHttpsServer.server.close()
+  if (stratMock && mockHttpsServer) {
+    mockHttpsServer.server.close()
+  }
+}
+
+async function test() {
+  var attestorIp = "localhost"
+  var attestorPort = 12345
+  var zkEngine: ZKEngine = 'gnark'
+  var reqLength = 1024
+  var repLength = 1024
+  var stratMock = true;
+  var mockUrl = `https://localhost:17777/me`
+  if (typeof window !== 'undefined') {
+    attestorIp = "192.168.20.128"
+    attestorPort = 12345
+    zkEngine = 'snarkjs'
+    reqLength = 1024
+    repLength = 1024
+    stratMock = false;
+    mockUrl = `https://192.168.20.128:17777/me`
+    // on browser
+    console.log('on browser, see browser/index.html')
+    return;
+  } else {
+    // on node
+    // [ip] [port] [gnark|snarkjs] [request-length] [response-length]
+    const args = process.argv.slice(2)
+    if (args.length > 0) {
+      attestorIp = args[0]
+    }
+    if (args.length > 1) {
+      attestorPort = parseInt(args[1])
+    }
+    if (args.length > 2) {
+      if (args[2] == 'snarkjs') zkEngine = 'snarkjs';
+    }
+    if (args.length > 3) {
+      reqLength = parseInt(args[3])
+    }
+    if (args.length > 4) {
+      repLength = parseInt(args[4])
+    }
+  }
+
+  await startProver(attestorIp, attestorPort, zkEngine, reqLength, repLength, stratMock, mockUrl)
+
 }
 test()
 

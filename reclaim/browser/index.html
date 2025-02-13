@@ -9,6 +9,43 @@
 
 <body>
   <script src="resources/attestor.min.js"></script>
+
+
+  <script>
+    function startBench() {
+      let param = {
+        "program": document.getElementById('program').value,
+        "party": document.getElementById('party').value,
+        "ip": document.getElementById('ip').value,
+        "port": document.getElementById('port').value,
+        "requestSize": document.getElementById('requestSize').value,
+        "responseSize": document.getElementById('responseSize').value,
+      };
+      console.log('startBench beg:');
+      const attestorIp = param.ip
+      const attestorPort = param.port
+      const zkEngine = 'snarkjs'
+      const reqLength = param.requestSize
+      const repLength = param.responseSize
+      const stratMock = false;
+      const mockUrl = `https://127.0.0.1:17777/me`
+      startProver(attestorIp, attestorPort, zkEngine, reqLength, repLength, stratMock, mockUrl)
+      console.log('startBench end:');
+    }
+  </script>
+
+
+  <div>
+    <input class="inp" id="program" value="test_protocol" />
+    <input class="inp" id="party" value="1" />
+    <input class="inp" id="ip" value="127.0.0.1" />
+    <input class="inp" id="port" value="12345" />
+    <input class="inp" id="requestSize" value="1024" />
+    <input class="inp" id="responseSize" value="16" />
+  </div>
+  <div>
+    <button class="btn" id="start" onclick="startBench()">start</button>
+  </div>
 </body>
 
 </html>

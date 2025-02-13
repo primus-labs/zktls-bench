@@ -14,14 +14,14 @@ if [ $# -ge 5 ]; then
 fi
 
 # configurations
-delays=(20 50)
-rates=(20 50)
+rates=(50 100 200)
+delays=(10 15 20)
 requests=(1024 2048)
-responses=(1024 2048)
+responses=(16 256 1024 2048)
 
 mkdir -p logs
-for delay in ${delays[@]}; do
-  for rate in ${rates[@]}; do
+for rate in ${rates[@]}; do
+  for delay in ${delays[@]}; do
     sudo tc qdisc add dev $interface root netem rate ${rate}mbit delay ${delay}ms
     for request in ${requests[@]}; do
       for response in ${responses[@]}; do
@@ -46,8 +46,8 @@ for delay in ${delays[@]}; do
           send_bytes=12345
           recv_bytes=12345
 
-          send_bytes=$(sudo iptables -L OUTPUT -v -n | grep ":${port}" | awk '{print int($2/1024)}')
-          recv_bytes=$(sudo iptables -L INPUT -v -n | grep ":${port}" | awk '{print int($2/1024)}')
+          send_bytes=$(sudo iptables -L OUTPUT -v -n | grep ":${port}" | awk '{print int($2)}')
+          recv_bytes=$(sudo iptables -L INPUT -v -n | grep ":${port}" | awk '{print int($2)}')
           sudo iptables -D INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
           sudo iptables -D OUTPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
 

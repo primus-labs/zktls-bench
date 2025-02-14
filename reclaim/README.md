@@ -3,7 +3,7 @@
 
 ```sh
 npm install
-npm run download:zk-file
+npm run download:zk-files
 npm run build
 npm run build:browser
 ```
@@ -35,7 +35,7 @@ There are two methods of testing.
 
 - 1. chrome-headless
 
-For wasm test, need start a simple http server for load wasm file by:
+For wasm test, need start a simple http server for loading wasm file in the prover side by running:
 
 ```sh
 cd ./browser

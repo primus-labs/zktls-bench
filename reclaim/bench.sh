@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/bash
 if [ $# -lt 4 ]; then
   echo "Usage: $0 \${party} \${ip} \${port} \${interace} [\${kind}]"
   exit 1

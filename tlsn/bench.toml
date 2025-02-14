@@ -1,0 +1,10 @@
+[[benches]]
+name = "all"
+upload = [50, 100, 200]
+upload-delay = [10, 15, 20]
+download = [50, 100, 200]
+download-delay = [10, 15, 20]
+upload-size = [1024, 2048]
+download-size = [16, 256, 1024, 2048]
+defer-decryption = [true, false]
+memory-profile = true

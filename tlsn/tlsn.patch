@@ -1,0 +1,82 @@
+diff --git a/crates/benches/binary/src/config.rs b/crates/benches/binary/src/config.rs
+index c36cd3e0..b8d96dc9 100644
+--- a/crates/benches/binary/src/config.rs
++++ b/crates/benches/binary/src/config.rs
+@@ -76,20 +76,20 @@ impl Bench {
+             Field::Multiple(u) => u,
+         };
+ 
+-        for u in upload {
+-            for ul in &upload_delay {
+-                for d in &download {
+-                    for dl in &download_latency {
++        // for u in upload {
++        //     for ul in &upload_delay {
++        //         for d in &download {
++        //             for dl in &download_latency {
+                         for us in &upload_size {
+                             for ds in &download_size {
+                                 for dd in &defer_decryption {
+                                     for mp in &memory_profile {
+                                         instances.push(BenchInstance {
+                                             name: self.name.clone(),
+-                                            upload: u,
+-                                            upload_delay: *ul,
+-                                            download: *d,
+-                                            download_delay: *dl,
++                                            upload: 0,
++                                            upload_delay: 0,
++                                            download: 0,
++                                            download_delay: 0,
+                                             upload_size: *us,
+                                             download_size: *ds,
+                                             defer_decryption: *dd,
+@@ -99,10 +99,10 @@ impl Bench {
+                                 }
+                             }
+                         }
+-                    }
+-                }
+-            }
+-        }
++        //             }
++        //         }
++        //     }
++        // }
+ 
+         instances
+     }
+diff --git a/crates/benches/binary/src/prover_main.rs b/crates/benches/binary/src/prover_main.rs
+index a72330d9..7d113d06 100644
+--- a/crates/benches/binary/src/prover_main.rs
++++ b/crates/benches/binary/src/prover_main.rs
+@@ -50,6 +50,7 @@ pub async fn prover_main(is_memory_profiling: bool) -> anyhow::Result<()> {
+     let port: u16 = std::env::var("VERIFIER_PORT")
+         .map(|port| port.parse().expect("port is valid u16"))
+         .unwrap_or(8000);
++    println!("{} {}", ip, port);
+     let verifier_host = (ip.as_str(), port);
+ 
+     let mut file = std::fs::OpenOptions::new()
+@@ -128,7 +129,7 @@ async fn run_instance(
+         memory_profile,
+     } = instance.clone();
+ 
+-    set_interface(PROVER_INTERFACE, upload, 1, upload_delay)?;
++    // set_interface(PROVER_INTERFACE, upload, 1, upload_delay)?;
+ 
+     let _profiler = if is_memory_profiling {
+         assert!(memory_profile, "Instance doesn't have `memory_profile` set");
+diff --git a/crates/benches/binary/src/verifier_main.rs b/crates/benches/binary/src/verifier_main.rs
+index ee341dc1..4c970d2d 100644
+--- a/crates/benches/binary/src/verifier_main.rs
++++ b/crates/benches/binary/src/verifier_main.rs
+@@ -77,7 +77,7 @@ async fn run_instance<S: AsyncWrite + AsyncRead + Send + Sync + Unpin + 'static>
+         ..
+     } = instance;
+ 
+-    set_interface(VERIFIER_INTERFACE, download, 1, download_delay)?;
++    // set_interface(VERIFIER_INTERFACE, download, 1, download_delay)?;
+ 
+     let _profiler = if is_memory_profiling {
+         assert!(memory_profile, "Instance doesn't have `memory_profile` set");

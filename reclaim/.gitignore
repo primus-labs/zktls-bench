@@ -5,4 +5,4 @@ zk-symmetric-crypto
 browser/resources
 logs
 result*.csv
-patched.csv
+patched*.csv

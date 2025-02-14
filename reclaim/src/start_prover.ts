@@ -1,28 +1,35 @@
 import { providers } from '@reclaimprotocol/attestor-core/lib/providers'
-providers.http.additionalClientOptions = {
-  // we need to disable certificate verification for testing purposes
-  verifyServerCertificate: false,
-  supportedProtocolVersions: ['TLS1_3']
-}
+import { TLSProtocolVersion } from '@reclaimprotocol/tls/lib/types'
 
 const parseCertificate = require('@reclaimprotocol/tls/lib/utils/parse-certificate');
-const mockVerifyCertificateChain = (): void => {
-  console.log('Mocked verifyCertificateChain called');
-};
+const mockVerifyCertificateChain = (): void => { };
 parseCertificate.verifyCertificateChain = mockVerifyCertificateChain
 
 import { createClaimOnAttestor } from '@reclaimprotocol/attestor-core/lib/client'
 import { ZKEngine } from '@reclaimprotocol/zk-symmetric-crypto'
 import { AttestorClient } from '@reclaimprotocol/attestor-core/lib/client/utils/client-socket'
-import { logger, uint8ArrayToStr } from '@reclaimprotocol/attestor-core/lib/utils'
+import { logger, uint8ArrayToStr, extractApplicationDataFromTranscript, getTranscriptString } from '@reclaimprotocol/attestor-core/lib/utils'
+import { decryptTranscript } from '@reclaimprotocol/attestor-core/lib/server'
+import { defaultData } from './comm'
 
 
 export async function startProver(
   attestorIp: string = 'localhost', attestorPort: number = 12345,
   zkEngine: ZKEngine = 'gnark', reqLength: number = 1024, repLength: number = 1024,
-  mockUrl = 'https://localhost:17777/me') {
+  mockUrl = 'https://localhost:17777/me', tlsVersion: TLSProtocolVersion = "TLS1_3") {
+
+  providers.http.additionalClientOptions = {
+    // we need to disable certificate verification for testing purposes
+    verifyServerCertificate: false,
+    supportedProtocolVersions: [tlsVersion]
+  }
+
   // console.log("process.memoryUsage1", process.memoryUsage());
   // console.log("process.resourceUsage1", process.resourceUsage());
+
+  const data = uint8ArrayToStr(new Uint8Array(reqLength))
+  // const data0 = defaultData.slice(0, repLength)
+
 
   const wsServerUrl = `ws://${attestorIp}:${attestorPort}/ws`
   const client = new AttestorClient({
@@ -33,8 +40,6 @@ export async function startProver(
 
   const user = 'adhiraj'
   const claimUrl = mockUrl
-
-  const data = uint8ArrayToStr(new Uint8Array(reqLength))
   const start = +new Date()
   const result = await createClaimOnAttestor({
     name: 'http',
@@ -45,12 +50,16 @@ export async function startProver(
       headers: {
         'replength': repLength.toString()
       },
-      responseRedactions: [],
-      responseMatches: [
+      responseRedactions: [
         {
-          type: 'contains',
-          value: `${user}@mock.com`
+          jsonPath: 'd'
         }
+      ],
+      responseMatches: [
+        // {
+        //   type: 'contains',
+        //   value: data0
+        // }
       ]
     },
     secretParams: {
@@ -62,6 +71,21 @@ export async function startProver(
   })
   // console.log('claimUrl', claimUrl)
   // console.log('elapsed', +new Date() - start)
+
+  // const transcript = result.request!.transcript
+  // const decTranscript = await decryptTranscript(
+  //   transcript, logger, zkEngine,
+  //   result.request?.fixedServerIV!, result.request?.fixedClientIV!
+  // )
+  // const applMsgs = extractApplicationDataFromTranscript(decTranscript)
+  // const transcriptStr = getTranscriptString(decTranscript)
+  // console.log('receipt:\n', transcriptStr)
+
+  // const requestData = applMsgs
+  // .filter(m => m.sender === 'client')
+  // .map(m => uint8ArrayToStr(m.message))
+  // .join('')
+  // console.log(requestData)
 
   var memeory = 0
   if (typeof window === 'undefined') {
@@ -87,6 +111,7 @@ async function test() {
   var reqLength = 1024
   var repLength = 1024
   var mockUrl = `https://localhost:17777/me`
+  var tlsVersion: TLSProtocolVersion = 'TLS1_3'
   if (typeof window !== 'undefined') {
     attestorIp = "127.0.0.1"
     attestorPort = 12345
@@ -97,6 +122,7 @@ async function test() {
     // - use `python https_server.py` start the server 
     // - set `–unsafely-treat-insecure-origin-as-secure=ws://127.0.0.1:12345`
     mockUrl = `https://127.0.0.1:17777/me`
+    tlsVersion = 'TLS1_3'
     // on browser
     console.log('on browser, see browser/index.html')
     return;
@@ -119,10 +145,12 @@ async function test() {
     if (args.length > 4) {
       repLength = parseInt(args[4])
     }
+    if (args.length > 5) {
+      if (args[5] == 'TLS1_2') tlsVersion = 'TLS1_2';
+    }
   }
 
-  await startProver(attestorIp, attestorPort, zkEngine, reqLength, repLength, mockUrl)
-
+  await startProver(attestorIp, attestorPort, zkEngine, reqLength, repLength, mockUrl, tlsVersion)
 }
 test()
 

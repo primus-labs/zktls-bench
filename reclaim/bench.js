@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
 (async () => {
-  // node bench.js x x 127.0.0.1 12345 1024 1024
+  // node bench.js x x 127.0.0.1 12345 1024 1024 TLS1_3
   const args = process.argv.slice(2)
   const program = args[0];
   const party = args[1];
@@ -9,6 +9,7 @@ const puppeteer = require('puppeteer');
   const port = args[3];
   const requestSize = args[4];
   const responseSize = args[5];
+  const tlsVersion = args[6];
 
   const browser = await puppeteer.launch({
     headless: true,
@@ -40,6 +41,7 @@ const puppeteer = require('puppeteer');
     port: port,
     requestSize: requestSize,
     responseSize: responseSize,
+    tlsVersion: tlsVersion,
   }
   await page.evaluate((params) => {
     document.querySelector('#program').value = params.program;
@@ -48,6 +50,7 @@ const puppeteer = require('puppeteer');
     document.querySelector('#port').value = params.port;
     document.querySelector('#requestSize').value = params.requestSize;
     document.querySelector('#responseSize').value = params.responseSize;
+    document.querySelector('#tlsVersion').value = params.tlsVersion;
     return `Set ${JSON.stringify(params)} OK`;
   }, params);
 

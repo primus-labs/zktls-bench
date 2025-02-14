@@ -1,15 +1,7 @@
-import { providers } from '@reclaimprotocol/attestor-core/lib/providers'
-providers.http.additionalClientOptions = {
-  // we need to disable certificate verification for testing purposes
-  verifyServerCertificate: false,
-  supportedProtocolVersions: ['TLS1_3']
-}
 import { createMockServer } from './mock-provider-server'
 
 const parseCertificate = require('@reclaimprotocol/tls/lib/utils/parse-certificate');
-const mockVerifyCertificateChain = (): void => {
-  // console.log('Mocked verifyCertificateChain called');
-};
+const mockVerifyCertificateChain = (): void => { };
 parseCertificate.verifyCertificateChain = mockVerifyCertificateChain
 
 import { createServer } from '@reclaimprotocol/attestor-core/lib/server'

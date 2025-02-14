@@ -1,15 +1,27 @@
 #!/bin/bash
 if [ $# -lt 4 ]; then
-  echo "Usage: $0 \${party} \${ip} \${port} \${interace} [\${kind}]"
+  echo "Usage: $0 \${party} \${ip} \${port} \${interace} [\${tls}] [\${kind}]"
   exit 1
 fi
 party=$1
 ip=$2
 port=$3
 interface=$4
-kind=native
+tls=TLS1_3
 if [ $# -ge 5 ]; then
-  kind=$5
+  tls=$5
+fi
+if [ "$tls" != "TLS1_2" ] && [ "$tls" != "TLS1_3" ]; then
+  echo "only support tls: TLS1_2 TLS1_3"
+  exit 1
+fi
+kind=native
+if [ $# -ge 6 ]; then
+  kind=$6
+fi
+if [ "$kind" != "native" ] && [ "$kind" != "wasm" ] && [ "$kind" != "snarkjs" ]; then
+  echo "only support tls: native wasm snarkjs"
+  exit 1
 fi
 
 # configurations
@@ -38,16 +50,16 @@ for rate in ${rates[@]}; do
           sudo iptables -I INPUT -p tcp --dport $port -j ACCEPT
           sudo iptables -I OUTPUT -p tcp --sport $port -j ACCEPT
 
-          logfile=logs/$party-$kind-$rate-$delay-$request-$response.log
+          logfile=logs/$party-$kind-$rate-$delay-$request-$response-$tls.log
           zkengine='gnark'
           if [ "$kind" = "wasm" ]; then
             zkengine='snarkjs'
-            node bench.js xx xx $ip $port $request $response >$logfile 2>&1
+            node bench.js xx xx $ip $port $request $response $tls >$logfile 2>&1
           elif [ "$kind" = "snarkjs" ]; then
             zkengine='snarkjs'
-            node lib/start_prover $ip $port $zkengine $request $response >$logfile 2>&1
+            node lib/start_prover $ip $port $zkengine $request $response $tls >$logfile 2>&1
           else
-            node lib/start_prover $ip $port $zkengine $request $response >$logfile 2>&1
+            node lib/start_prover $ip $port $zkengine $request $response $tls >$logfile 2>&1
           fi
 
           res=$(cat $logfile | grep DONE:)

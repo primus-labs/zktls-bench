@@ -5,6 +5,8 @@ import { readFileSync } from 'fs'
 import { createServer } from 'https'
 import { logger, uint8ArrayToStr } from '@reclaimprotocol/attestor-core/lib/utils'
 
+import { defaultData } from './comm'
+
 /**
  * Mock https server to test claim creation.
  * It implements a GET /me endpoint that returns the email address
@@ -70,8 +72,13 @@ export function createMockServer(port: number) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function endWithJson(status: number, json: any) {
       repLength = parseInt(req.headers['replength'] as string)
-      const str = JSON.stringify(json) + uint8ArrayToStr(new Uint8Array(repLength))
+      // const str = JSON.stringify(json) + uint8ArrayToStr(new Uint8Array(repLength))
+      // const str = `{"d":${uint8ArrayToStr(new Uint8Array(repLength))}}`
+      // const str = `{"d":"${uint8ArrayToStr(new Uint8Array(repLength))}"}`
+      // const str = `{"t":"t","d":"${defaultData.slice(0, repLength)}"}`
+      const str = `{"d":"${defaultData.slice(0, repLength)}"}`
       console.log('str.length', str.length)
+      // console.log('str', str)
       res.writeHead(status, {
         'Content-Type': 'application/json',
         'Content-Length': str.length.toString(),

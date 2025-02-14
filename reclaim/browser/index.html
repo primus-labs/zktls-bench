@@ -20,6 +20,7 @@
         "port": document.getElementById('port').value,
         "requestSize": document.getElementById('requestSize').value,
         "responseSize": document.getElementById('responseSize').value,
+        "tlsVersion": document.getElementById('tlsVersion').value,
       };
       console.log('startBench beg:');
       const attestorIp = param.ip
@@ -28,7 +29,8 @@
       const reqLength = param.requestSize
       const repLength = param.responseSize
       const mockUrl = `https://127.0.0.1:17777/me`
-      startProver(attestorIp, attestorPort, zkEngine, reqLength, repLength, mockUrl)
+      const tlsVersion = param.tlsVersion
+      startProver(attestorIp, attestorPort, zkEngine, reqLength, repLength, mockUrl, tlsVersion)
       console.log('startBench end:');
     }
   </script>
@@ -41,6 +43,7 @@
     <input class="inp" id="port" value="12345" />
     <input class="inp" id="requestSize" value="1024" />
     <input class="inp" id="responseSize" value="16" />
+    <input class="inp" id="tlsVersion" value="TLS1_3" />
   </div>
   <div>
     <button class="btn" id="start" onclick="startBench()">start</button>

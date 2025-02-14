@@ -15,10 +15,11 @@ node lib/start_attestor [port]
 ```
 
 ```sh
-node lib/start_prover [ip] [port] [zk-engine] [request-length] [response-length]
+node lib/start_prover [ip] [port] [zk-engine] [request-length] [response-length] [tls-version]
 ```
 
-Set zk-engine `gnark` for native and `snarkjs` for wasm.
+- set zk-engine `gnark` for native and `snarkjs` for wasm.
+- tls-version: TLS1_2, TLS1_3(default) 
 
 
 ## Use scripts (native):
@@ -45,8 +46,9 @@ python -m http.server
 And then,
 
 ```sh
-# party ip port interface wasm
-./bench.sh 1 127.0.0.1 12345 lo wasm
+# party ip port interface TLS1_2/TLS1_3 wasm
+# ./bench.sh 1 127.0.0.1 12345 lo TLS1_2 wasm
+./bench.sh 1 127.0.0.1 12345 lo TLS1_3 wasm
 ./bench.sh 2 127.0.0.1 12345 lo
 ```
 
@@ -56,8 +58,9 @@ And then,
 It's the same as `chrome-headless` but no need start http server for loading wasm file. By runing:
 
 ```sh
-# party ip port interface snarkjs
-./bench.sh 1 127.0.0.1 12345 lo snarkjs
+# party ip port interface TLS1_2/TLS1_3 snarkjs
+# ./bench.sh 1 127.0.0.1 12345 lo TLS1_2 snarkjs
+./bench.sh 1 127.0.0.1 12345 lo TLS1_3 snarkjs
 ./bench.sh 2 127.0.0.1 12345 lo
 ```
 

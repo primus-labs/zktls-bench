@@ -14,23 +14,15 @@ export VERIFIER_PORT=$port
 
 bandwithSet=(50 100 200)
 latencySet=(10 15 20)
-                ./reset_network.sh $interface
+./reset_network.sh $interface
 for rate in ${bandwithSet[@]}
 do
-	for delay in ${latencySet[@]}
-	do
-		./simulate_network.sh $interface $rate $delay
-../../../target/release/${party} &
-wait
-                ./reset_network.sh $interface
-		sleep 3
-        done
+    for delay in ${latencySet[@]}
+    do
+        ./simulate_network.sh $interface $rate $delay
+        ../../../target/release/${party} &
+        wait
+        ./reset_network.sh $interface
+        sleep 3
+    done
 done
-# Run the benchmark binary.
-# ../../../target/release/bench
-
-# Run the benchmark binary in memory profiling mode.
-# ../../../target/release/bench --memory-profiling
-
-# Plot the results.
-# ../../../target/release/plot metrics.csv

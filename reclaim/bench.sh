@@ -19,11 +19,14 @@ delays=(10 15 20)
 requests=(1024 2048)
 responses=(16 256 1024 2048)
 
+sudo tc qdisc del dev $interface root >/dev/null 2>&1
+
 mkdir -p logs
 for rate in ${rates[@]}; do
   for delay in ${delays[@]}; do
     if [ "$party" = "1" ]; then
-      sudo tc qdisc add dev $interface root netem rate ${rate}mbit delay ${delay}ms
+      delay2=$((delay * 2))
+      sudo tc qdisc add dev $interface root netem rate ${rate}mbit delay ${delay2}ms
     fi
     for request in ${requests[@]}; do
       for response in ${responses[@]}; do
@@ -56,8 +59,8 @@ for rate in ${rates[@]}; do
           fi
           send_bytes=$(sudo iptables -L OUTPUT -v -n | grep ":${port}" | awk '{print $2}')
           recv_bytes=$(sudo iptables -L INPUT -v -n | grep ":${port}" | awk '{print $2}')
-          sudo iptables -D INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
-          sudo iptables -D OUTPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
+          # sudo iptables -D INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
+          # sudo iptables -D OUTPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
 
           resfile=result-$party.csv
           if [ ! -f "$resfile" ]; then

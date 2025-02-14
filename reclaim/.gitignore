@@ -3,6 +3,7 @@ package-lock.json
 lib
 zk-symmetric-crypto
 browser/resources
+browser/browser-rpc
 logs
 result*.csv
 patched*.csv

@@ -69,6 +69,7 @@ export function createMockServer(port: number) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function endWithJson(status: number, json: any) {
+      repLength = parseInt(req.headers['replength'] as string)
       const str = JSON.stringify(json) + uint8ArrayToStr(new Uint8Array(repLength))
       console.log('str.length', str.length)
       res.writeHead(status, {

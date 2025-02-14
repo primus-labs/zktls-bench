@@ -8,10 +8,10 @@ module.exports = {
 		libraryTarget: 'umd',
 		filename: 'attestor.min.js',
 		path: process.env.BUNDLE_PATH
-			|| path.resolve(__dirname, 'browser/resources')
+			|| path.resolve(__dirname, 'browser/browser-rpc/resources')
 	},
 	mode: process.env.NODE_ENV
-		|| 'development',
+		|| 'production',
 	resolve: {
 		extensions: ['.webpack.js', '.web.js', '.ts', '.js', '.json'],
 		alias: {

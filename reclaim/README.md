@@ -69,12 +69,19 @@ It's the same as `chrome-headless` but no need start http server for loading was
 
 ## Appendix
 
-The algorithm of generate proof:
+
+**The algorithm of generate proof:**
 - tls1.2 use aes-128-ctr
 - tls1.3 use aes-256-ctr
 
 <br/>
 
-Reclaim has two fields:
+**Reclaim has two fields:**
 - The `responseRedactions` defines what needs to be redacted and proved. (If this is empty, i.e. no proof is done, performance will be fast. For our tests, we need to set this field)
 - The `responseMatches` just matches the contents redacted by `responseRedactions` (if `responseRedactions` is empty, then will be matched from the entire response), and doesn't do proof.
+
+
+<br/>
+
+**Additional note on data traffic:**
+It is possible that some machines do not fully support iptables to work, and it is possible to run traffic data on a supported machine, e.g. locally. Since latency and bandwidth do not affect data traffic volume, only different request size, response size, type (local/wasm) and tls (1.2/1.3) parameters are needed.

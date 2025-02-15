@@ -22,7 +22,15 @@ So, each file has 73 lines, one header line and 72 (3x3x2x4) lines of data.
 
 
 ## Machine Configuration
+### X86
+- OS: Ubuntu-22.04
+- CPU: 8 vCPUs, Intel(R) Xeon(R) CPU@ 3.10GHz
+- Memory: 32GB
 
+### ARM
+- OS: Ubuntu-22.04
+- CPU: 8 vCPUs, 3.1GHz
+- Memory: 32GB
 
 
 ## Plotting

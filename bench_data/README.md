@@ -28,6 +28,7 @@ So, each file has 73 lines, one header line and 72 (3x3x2x4) lines of data.
 - Memory: 32GB
 
 ### ARM
+- Cloud Machine: Ampere Altra, t2a-standand-8
 - OS: Ubuntu-22.04
 - CPU: 8 vCPUs, 3.1GHz
 - Memory: 32GB

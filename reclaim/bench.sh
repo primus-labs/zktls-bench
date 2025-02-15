@@ -29,10 +29,6 @@ rates=(50 100 200)
 delays=(10 15 20)
 requests=(1024 2048)
 responses=(16 256 1024 2048)
-rates=(50)
-delays=(10)
-requests=(1024)
-responses=(16 16 256 1024 2048 4096 8192)
 
 sudo tc qdisc del dev $interface root >/dev/null 2>&1
 
@@ -81,14 +77,14 @@ for rate in ${rates[@]}; do
           if [ ! -f "$resfile" ]; then
             echo "kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)" >$resfile
           fi
-          echo "$kind,reclaim,$rate,$delay,$request,$response,$send_bytes,$recv_bytes,$cost,$memory" >>$resfile
+          echo "$kind,$tls-$zkengine,$rate,$delay,$request,$response,$send_bytes,$recv_bytes,$cost,$memory" >>$resfile
         fi
-        # sleep 2
+        sleep 2
       done
     done
     if [ "$party" = "1" ]; then
       sudo tc qdisc del dev $interface root >/dev/null 2>&1
     fi
-    # sleep 1
+    sleep 1
   done
 done

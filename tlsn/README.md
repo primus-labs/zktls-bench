@@ -1,4 +1,4 @@
-# otls-bench
+# tlsn-bench
 
 ## Patch Code
 

@@ -31,9 +31,9 @@ for rate in ${bandwithSet[@]}; do
   for delay in ${latencySet[@]}; do
     ./simulate_network.sh $interface $rate $delay
     if [ "$kind" = "wasm" ]; then
-      ../3rd/tlsn/target/release/${party}
+      ./3rd/tlsn/target/release/${party}
     else
-      ../3rd/tlsn/target/release/${party}-memory
+      ./3rd/tlsn/target/release/${party}-memory
     fi
     ./reset_network.sh $interface
     sleep 3

@@ -1,4 +1,4 @@
-# primus
+# primus-bench
 
 ## Native(cpp)
 

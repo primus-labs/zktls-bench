@@ -11,3 +11,6 @@
 	path = tlsn/3rd/tlsn
 	url = git@github.com:tlsnotary/tlsn.git
 	branch = dev
+[submodule "origo/3rd/web-prover"]
+	path = origo/3rd/web-prover
+	url = git@github.com:pluto/web-prover.git

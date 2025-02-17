@@ -1,5 +1,13 @@
 # primus(otls)-bench
 
+## Dependencies
+
+- gcc/cmake.
+- emcc: For compiling wasm. Reference [emsdk](https://emscripten.org/docs/getting_started/downloads.html) to install emcc.
+- Python: 3.7+. Load wasm files for browser testing only.
+- Chrome: For browser testing. You should [install chrome](../primus/INSTALL_CHROME.md) first if you plan to run WASM test on a server (**NOT DESKTOP**).
+
+
 ## Native(cpp)
 
 ### Compile
@@ -38,19 +46,12 @@ For `proxy-tls` model, the bench program is `test_prove_proxy_tls`. The same way
 
 ### Result
 
-Bench result is outputed in `result-${party}.csv`. The columns are `kind`,`name`,`bandwith(Mbps)`,`latency(ms)`,`request_size(B)`,`response_size(B)`,`send_bytes(B)`,`recv_bytes(B)`,`cost(ms)`,memory(KB).
+Bench result is outputed in `result-${party}.csv`. The columns are `kind`,`name`,`bandwith(Mbps)`,`latency(ms)`,`request_size(B)`,`response_size(B)`,`send_bytes(B)`,`recv_bytes(B)`,`cost(ms)`,`memory(KB)`.
 
 
 ## WASM
 
-(Optional) You should first install chrome if you plan to run on a server (NOT DESKTOP) by runing: (for example on ubuntu server)
-
-```sh
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo apt-get install -f
-sudo dpkg -i google-chrome-stable_current_amd64.deb
-```
-
+(Optional) You should [install chrome](../primus/INSTALL_CHROME.md) first if you plan to run WASM test on a server (**NOT DESKTOP**).
 
 ### Compile
 

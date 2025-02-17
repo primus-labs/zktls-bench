@@ -1,5 +1,13 @@
 # reclaim-bench
 
+
+## Dependencies
+
+- NodeJS: 18+.
+- Python: 3.7+. Load wasm files for browser testing only.
+- Chrome: For browser testing. You should [install chrome](../primus/INSTALL_CHROME.md) first if you plan to run WASM test on a server (**NOT DESKTOP**).
+
+
 ## Build
 
 ```sh
@@ -9,63 +17,48 @@ npm run build
 npm run build:browser
 ```
 
-## (Optional) Use manually:
+## Script
 
 ```sh
-node lib/start_attestor [port]
+./bench.sh party ip port interface tls kind
 ```
 
+- party: 1 or 2 for the Prover or the Verifier, respectively.
+- ip: The Verifier's IP.
+- port: The Verifier's PORT.
+- interface: The gateway interface for communication.
+- tls: (Only for the Prover side) TLS1_3(default) or TLS1_2.
+- kind: (Only for the Prover side) native(default) or wasm.
+
+
+## Run
+
+### Native
+
 ```sh
-node lib/start_prover [ip] [port] [zk-engine] [request-length] [response-length] [tls-version]
-```
-
-- set zk-engine `gnark` for native and `snarkjs` for wasm.
-- tls-version: TLS1_2, TLS1_3(default) 
-
-
-## Use scripts (native):
-
-```sh
-# party ip port interface
-./bench.sh 1 127.0.0.1 12345 lo
 ./bench.sh 2 127.0.0.1 12345 lo
+./bench.sh 1 127.0.0.1 12345 lo
 ```
 
-## Use scripts (wasm):
+### Wasm
 
-There are two methods of testing.
-
-- 1. chrome-headless
-
-For wasm test, need start a simple http server for loading wasm file in the prover side by running:
+For wasm test, need start a simple http server for loading wasm files in the Prover side by running:
 
 ```sh
 cd ./browser
 python -m http.server
 ```
 
-And then,
+(Optional) You should [install chrome](../primus/INSTALL_CHROME.md) first if you plan to run WASM test on a server (**NOT DESKTOP**).
 
 ```sh
-# party ip port interface TLS1_2/TLS1_3 wasm
-# ./bench.sh 1 127.0.0.1 12345 lo TLS1_2 wasm
-./bench.sh 1 127.0.0.1 12345 lo TLS1_3 wasm
 ./bench.sh 2 127.0.0.1 12345 lo
+./bench.sh 1 127.0.0.1 12345 lo [TLS1_3/TLS1_2] wasm
 ```
 
+## Result
 
-- 2. use snarkjs. (Optional)
-
-It's the same as `chrome-headless` but no need start http server for loading wasm file. By runing:
-
-```sh
-# party ip port interface TLS1_2/TLS1_3 snarkjs
-# ./bench.sh 1 127.0.0.1 12345 lo TLS1_2 snarkjs
-./bench.sh 1 127.0.0.1 12345 lo TLS1_3 snarkjs
-./bench.sh 2 127.0.0.1 12345 lo
-```
-
-(In real-world test runs, the performance of the two is basically the same.)
+The results will be output to `result-1.csv` in the Prover side.
 
 
 ## Appendix

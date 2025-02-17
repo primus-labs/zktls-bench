@@ -12,7 +12,16 @@ if [ $# -ge 5 ]; then
   kind=$5
 fi
 if [ "$kind" != "native" ] && [ "$kind" != "wasm" ]; then
-  echo "only support tls: native wasm"
+  echo "only support kind: native wasm"
+  exit 1
+fi
+
+if [ "$party" = "1" ]; then
+  party="prover"
+elif [ "$party" = "2" ]; then
+  party="verifier"
+else
+  echo "party is 1 or 2"
   exit 1
 fi
 

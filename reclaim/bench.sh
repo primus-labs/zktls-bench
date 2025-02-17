@@ -20,7 +20,7 @@ if [ $# -ge 6 ]; then
   kind=$6
 fi
 if [ "$kind" != "native" ] && [ "$kind" != "wasm" ] && [ "$kind" != "snarkjs" ]; then
-  echo "only support tls: native wasm snarkjs"
+  echo "only support kind: native wasm snarkjs"
   exit 1
 fi
 

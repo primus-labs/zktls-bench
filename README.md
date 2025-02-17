@@ -1,6 +1,9 @@
 # zktls-bench
 
 
+This repository contains some bench test scripts for native (x86/arm) and browser (wasm).
+
+
 ## Bench Tests
 
 - [Primus](./primus/README.md)

@@ -3,7 +3,7 @@ using namespace std;
 
 // 1: use websocket io
 // 0: use net io
-#define USE_WEBSOCKET_IO 1 
+#define USE_WEBSOCKET_IO 1
 
 #if USE_WEBSOCKET_IO
 #include "websocket_io_channel.h"
@@ -14,8 +14,7 @@ inline PrimusIO* createPrimusIO(bool isAlice, const string& ip, int port) {
     PrimusIO* io = nullptr;
     if (isAlice) {
         io = new WebSocketIO(("ws://" + ip + ":" + std::to_string(port)).c_str());
-    }
-    else {
+    } else {
         io = new WebSocketIO(port);
     }
     io->Init();

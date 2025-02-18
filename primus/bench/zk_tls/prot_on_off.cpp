@@ -40,8 +40,10 @@ void full_protocol_offline() {
     hs_offline->compute_client_finished_msg();
     hs_offline->compute_server_finished_msg();
 
-    AEADOffline* aead_c_offline = new AEADOffline(hs_offline->client_write_key, hs_offline->client_write_iv);
-    AEADOffline* aead_s_offline = new AEADOffline(hs_offline->server_write_key, hs_offline->server_write_iv);
+    AEADOffline* aead_c_offline =
+      new AEADOffline(hs_offline->client_write_key, hs_offline->client_write_iv);
+    AEADOffline* aead_s_offline =
+      new AEADOffline(hs_offline->server_write_key, hs_offline->server_write_iv);
 
     RecordOffline* rd_offline = new RecordOffline();
 
@@ -114,8 +116,10 @@ void full_protocol(HandShake<IO>* hs, IO* io, IO* io_opt, COT<IO>* cot, int part
     // padding the last 8 bytes of iv_c and iv_s according to TLS!
     memset(iv_c_oct, 0x11, 8);
     memset(iv_s_oct, 0x22, 8);
-    AEAD<IO>* aead_c = new AEAD<IO>(io, io_opt, cot, hs->client_write_key, hs->client_write_iv);
-    AEAD<IO>* aead_s = new AEAD<IO>(io, io_opt, cot, hs->server_write_key, hs->server_write_iv);
+    AEAD<IO>* aead_c =
+      new AEAD<IO>(io, io_opt, cot, hs->client_write_key, hs->client_write_iv);
+    AEAD<IO>* aead_s =
+      new AEAD<IO>(io, io_opt, cot, hs->server_write_key, hs->server_write_iv);
 
     Record<IO>* rd = new Record<IO>;
     unsigned char* finc_ctxt = new unsigned char[finished_msg_length];
@@ -137,17 +141,16 @@ void full_protocol(HandShake<IO>* hs, IO* io, IO* io_opt, COT<IO>* cot, int part
     unsigned char* stag = new unsigned char[tag_length];
 
     // the client encrypts the first message, and sends to the server.
-    rd->encrypt(aead_c, io, cctxt, ctag, cmsg, QUERY_BYTE_LEN, aad, aad_len, iv_c_oct, 8, party);
+    rd->encrypt(aead_c, io, cctxt, ctag, cmsg, QUERY_BYTE_LEN, aad, aad_len, iv_c_oct, 8,
+                party);
     // prove handshake in post-record phase.
     switch_to_zk();
     PostRecord<IO>* prd = new PostRecord<IO>(io, hs, aead_c, aead_s, rd, party);
     prd->reveal_pms(Ts);
     // Use correct finc_ctxt, fins_ctxt, iv_c, iv_s according to TLS!
     prd->prove_and_check_handshake_step1(rc, 32, rs, 32, tau_c, 32, tau_s, 32, rc, 32, true);
-    prd->prove_and_check_handshake_step2(finc_ctxt, finished_msg_length,
-                                         iv_c_oct, 8);
-    prd->prove_and_check_handshake_step3(finc_ctxt, finished_msg_length,
-                                         iv_s_oct, 8);
+    prd->prove_and_check_handshake_step2(finc_ctxt, finished_msg_length, iv_c_oct, 8);
+    prd->prove_and_check_handshake_step3(finc_ctxt, finished_msg_length, iv_s_oct, 8);
     Integer prd_cmsg, prd_cmsg2, prd_smsg, prd_smsg2, prd_cz0, prd_c2z0, prd_sz0, prd_s2z0;
     prd->prove_record_client(prd_cmsg, prd_cz0, cctxt, QUERY_BYTE_LEN, iv_c_oct, 8);
     prd->prove_record_server_last(prd_smsg2, prd_s2z0, cctxt, RESPONSE_BYTE_LEN, iv_s_oct, 8);
@@ -238,47 +241,42 @@ string test_prot_on_off(const string& args) {
         std::cout << "[Linux]Peak resident set size: " << (size_t)rusage.ru_maxrss
                   << std::endl;
         memory = rusage.ru_maxrss;
-    }
-    else
+    } else
         std::cout << "[Linux]Query RSS failed" << std::endl;
 #elif defined(__APPLE__)
     struct mach_task_basic_info info;
     mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
     if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) ==
-        KERN_SUCCESS) { 
+        KERN_SUCCESS) {
         std::cout << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max
                   << std::endl;
         memory = info.resident_size_max;
-    }
-    else
+    } else
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
     size_t totalCounter = 0;
-	// sum up send bytes of all io
+    // sum up send bytes of all io
     for (int i = 0; i < threads; i++) {
         totalCounter += io[i]->counter;
     }
     totalCounter += io_opt->counter;
 
     uint32_t recvCounter = totalCounter;
-	// sync send bytes of verifier to prover
+    // sync send bytes of verifier to prover
     if (party == ALICE) {
         io[0]->recv_data(&recvCounter, sizeof(recvCounter));
-    }
-    else {
+    } else {
         io[0]->send_data(&recvCounter, sizeof(recvCounter));
         io[0]->flush();
         recvCounter = 0;
     }
-    
-    json j2 = {
-        {"requestSize", QUERY_BYTE_LEN},
-        {"responseSize", RESPONSE_BYTE_LEN},
-        {"sendBytes", totalCounter},
-        {"recvBytes", recvCounter},
-        {"totalCost", emp::time_from(start) / 1e3},
-        {"memory", memory}
-    };
+
+    json j2 = {{"requestSize", QUERY_BYTE_LEN},
+               {"responseSize", RESPONSE_BYTE_LEN},
+               {"sendBytes", totalCounter},
+               {"recvBytes", recvCounter},
+               {"totalCost", emp::time_from(start) / 1e3},
+               {"memory", memory}};
 
     for (int i = 0; i < threads; i++) {
         delete ios[i];

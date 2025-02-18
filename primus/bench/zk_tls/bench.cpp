@@ -15,12 +15,10 @@ void do_main(const string& args) {
     if (program == "test_protocol") {
         // bench mpc model
         result = test_protocol(args);
-    }
-    else if (program == "test_prot_on_off") {
+    } else if (program == "test_prot_on_off") {
         // bench mpc model online-offline
         result = test_prot_on_off(args);
-    }
-    else if (program == "test_prove_proxy_tls") {
+    } else if (program == "test_prove_proxy_tls") {
         // bench proxy model
         result = test_prove_proxy_tls(args);
     }
@@ -42,16 +40,9 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    json j = {
-        {"program", argv[1]},
-        {"party", argv[2]},
-        {"ip", argv[3]},
-        {"port", argv[4]},
-        {"requestSize", argv[5]},
-        {"responseSize", argv[6]}
-    };
+    json j = {{"program", argv[1]}, {"party", argv[2]},       {"ip", argv[3]},
+              {"port", argv[4]},    {"requestSize", argv[5]}, {"responseSize", argv[6]}};
     do_main(j.dump());
 #endif
     return 0;
 }
-

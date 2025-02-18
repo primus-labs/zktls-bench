@@ -36,6 +36,7 @@ if [ "$kind" = "wasm" ]; then
   CMD="node ./browser/wasm/bench.js"
 fi
 
+./scripts/reset_network.sh $interface
 for line in $(cat ${cfgfile}); do
   echo $line
   bandwith=$(echo $line | awk -F: '{print $1}')
@@ -53,7 +54,15 @@ for line in $(cat ${cfgfile}); do
   send_bytes=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="sendBytes") {print $(i+2)}}}')
   recv_bytes=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="recvBytes") {print $(i+2)}}}')
   total_cost=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="totalCost") {print $(i+2)}}}')
-  memory=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="memory") {print $(i+2)}}}')
+  memory=0
+  if [ "$kind" == "native" ]; then
+    memory=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="memory") {print $(i+2)}}}')
+  fi
+
+  if [ "$kind" == "wasm" ]; then
+    memoryRes=$(cat $logfile | grep memStat)
+    memory=$(echo $memoryRes | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="totalJSHeapSize") {print $(i+2)}}}')
+  fi
 
   echo "$kind,$program,$bandwith,$delay,$request_size,$response_size,$send_bytes,$recv_bytes,$total_cost,$memory" >>$resfile
   sleep 4

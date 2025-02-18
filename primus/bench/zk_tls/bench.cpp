@@ -49,3 +49,7 @@ int main(int argc, char** argv) {
 
 // number of threads
 int threads = 4;
+// http request size
+size_t QUERY_BYTE_LEN = 2 * 1024;
+// http response size
+size_t RESPONSE_BYTE_LEN = 2 * 1024;

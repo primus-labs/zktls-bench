@@ -37,3 +37,8 @@ string test_prove_proxy_tls(const string& args);
 
 // threads
 extern int threads;
+// http request size
+extern size_t QUERY_BYTE_LEN;
+// http response size
+extern size_t RESPONSE_BYTE_LEN;
+

@@ -21,11 +21,6 @@ using json = nlohmann::ordered_json;
 using namespace std;
 using namespace emp;
 
-// http request size
-static size_t QUERY_BYTE_LEN = 2 * 1024;
-// http response size
-static size_t RESPONSE_BYTE_LEN = 2 * 1024;
-
 // aes gcm local encryption function
 static void aes_gcm_encrypt(unsigned char* out,
                             unsigned char* gcm_tag,

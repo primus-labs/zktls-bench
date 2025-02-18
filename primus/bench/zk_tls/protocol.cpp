@@ -24,7 +24,9 @@ using json = nlohmann::ordered_json;
 using namespace std;
 using namespace emp;
 
+// http request size
 static size_t QUERY_BYTE_LEN = 2 * 1024;
+// http response size
 static size_t RESPONSE_BYTE_LEN = 2 * 1024;
 
 const int threads = 4;
@@ -111,20 +113,16 @@ void full_protocol(IO* io, IO* io_opt, COT<IO>* cot, int party) {
     // Use correct ciphertext instead of finc_ctxt!
     hs->decrypt_server_finished_msg(aead_s, msg, finc_ctxt, finished_msg_length, finc_tag, aad,
                                     aad_len, iv_s_oct, 8, party);
-    cout << "handshake time: " << emp::time_from(start) << " us" << endl;
 
     unsigned char* cctxt = new unsigned char[QUERY_BYTE_LEN];
     unsigned char* ctag = new unsigned char[tag_length];
 
     unsigned char* sctxt = new unsigned char[RESPONSE_BYTE_LEN];
     unsigned char* stag = new unsigned char[tag_length];
-    start = emp::clock_start();
 
     // the client encrypts the first message, and sends to the server.
     rd->encrypt(aead_c, io, cctxt, ctag, cmsg, QUERY_BYTE_LEN, aad, aad_len, iv_c_oct, 8, party);
-    cout << "record time: " << emp::time_from(start) << " us" << endl;
     // prove handshake in post-record phase.
-    start = emp::clock_start();
     switch_to_zk();
     PostRecord<IO>* prd = new PostRecord<IO>(io, hs, aead_c, aead_s, rd, party);
     prd->reveal_pms(Ts);
@@ -146,7 +144,6 @@ void full_protocol(IO* io, IO* io_opt, COT<IO>* cot, int party) {
 
     sync_zk_gc<IO>();
     switch_to_gc();
-    cout << "post record: " << emp::time_from(start) << " us" << endl;
     EC_POINT_free(V);
     EC_POINT_free(Tc);
     BN_free(t);
@@ -187,7 +184,6 @@ string test_protocol(const string& args) {
     int port = atoi(portStr.c_str());
     QUERY_BYTE_LEN = atoi(requestSizeStr.c_str());
     RESPONSE_BYTE_LEN = atoi(responseSizeStr.c_str());
-    printf("_main:%s\n", args.c_str());
     PrimusIO* io_opt = createPrimusIO(party == ALICE, ip, port + threads);
 
     BoolIO<PrimusIO>* ios[threads];
@@ -199,15 +195,11 @@ string test_protocol(const string& args) {
     PrimusIO* io0 = io[0];
 
     auto start = emp::clock_start();
-    auto start0 = start;
     setup_protocol<PrimusIO>(io0, ios, threads, party);
-    cout << "setup time: " << emp::time_from(start) << " us" << endl;
     auto prot = (PrimusParty<PrimusIO>*)(ProtocolExecution::prot_exec);
     IKNP<PrimusIO>* cot = prot->ot;
     full_protocol<PrimusIO>(io0, io_opt, cot, party);
 
-    cout << "gc AND gates: " << dec << gc_circ_buf->num_and() << endl;
-    cout << "zk AND gates: " << dec << zk_circ_buf->num_and() << endl;
     finalize_protocol();
 
     bool cheat = CheatRecord::cheated();
@@ -237,13 +229,13 @@ string test_protocol(const string& args) {
         std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
     size_t totalCounter = 0;
+	// sum up send bytes of all io
     for (int i = 0; i < threads; i++) {
         totalCounter += io[i]->counter;
     }
     totalCounter += io_opt->counter;
-    cout << "comm: " << ((totalCounter) * 1.0) / 1024 << " KBytes" << endl;
-    cout << "total time: " << emp::time_from(start0) << " us" << endl;
     uint32_t recvCounter = totalCounter;
+	// sync send bytes of verifier to prover
     if (party == ALICE) {
         io[0]->recv_data(&recvCounter, sizeof(recvCounter));
     }
@@ -258,7 +250,7 @@ string test_protocol(const string& args) {
         {"responseSize", RESPONSE_BYTE_LEN},
         {"sendBytes", totalCounter},
         {"recvBytes", recvCounter},
-        {"totalCost", emp::time_from(start0) / 1e3},
+        {"totalCost", emp::time_from(start) / 1e3},
         {"memory", memory}
     };
 

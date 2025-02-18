@@ -6,29 +6,35 @@ using json = nlohmann::ordered_json;
 #include "helper.h"
 
 string result;
+// bench dispatcher function
 void do_main(const string& args) {
     printf("do_main:%s\n", args.c_str());
     result = "";
     json j = json::parse(args);
     string program = j["program"];
     if (program == "test_protocol") {
+        // bench mpc model
         result = test_protocol(args);
     }
     else if (program == "test_prot_on_off") {
+        // bench mpc model online-offline
         result = test_prot_on_off(args);
     }
     else if (program == "test_prove_proxy_tls") {
+        // bench proxy model
         result = test_prove_proxy_tls(args);
     }
     printf("DONE:%s\n", result.c_str());
 }
 
+// entrypoint function for wasm bench function
 PORT_FUNCTION(const char*) _main(const char* args) {
     std::thread t(do_main, string(args));
     t.detach();
     return result.c_str();
 }
 
+// entrypoint function for cpp bench function
 int main(int argc, char** argv) {
 #ifndef __EMSCRIPTEN__
     if (argc < 7) {

@@ -77,14 +77,14 @@ struct SendBuffer{
         } else {
             buffer_size = EXTRA_HEADER_SIZE + 2 * sizeof(uint64_t) + payload_size;
         }
-        buffer = new char[buffer_size];
+        buffer = (char*)malloc(buffer_size);
         memset(buffer, 0, buffer_size);
         offset += EXTRA_HEADER_SIZE + 2 * sizeof(uint64_t);
         mask_data = time(NULL);
     }
     SendBuffer() : SendBuffer(0, nullptr) {}
 
-    ~SendBuffer() { delete[] buffer; }
+    ~SendBuffer() { free(buffer); }
 
     void set_send_id(SendBuffer* rhs) {
         send_id = rhs->send_id;

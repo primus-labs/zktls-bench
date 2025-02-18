@@ -10,7 +10,7 @@ import { ZKEngine } from '@reclaimprotocol/zk-symmetric-crypto'
 import { AttestorClient } from '@reclaimprotocol/attestor-core/lib/client/utils/client-socket'
 import { logger, uint8ArrayToStr, extractApplicationDataFromTranscript, getTranscriptString } from '@reclaimprotocol/attestor-core/lib/utils'
 import { decryptTranscript } from '@reclaimprotocol/attestor-core/lib/server'
-import { defaultData } from './comm'
+import { assertValidClaimSignatures } from '@reclaimprotocol/attestor-core'
 
 
 export async function startProver(
@@ -24,12 +24,7 @@ export async function startProver(
     supportedProtocolVersions: [tlsVersion]
   }
 
-  // console.log("process.memoryUsage1", process.memoryUsage());
-  // console.log("process.resourceUsage1", process.resourceUsage());
-
   const data = uint8ArrayToStr(new Uint8Array(reqLength))
-  // const data0 = defaultData.slice(0, repLength)
-
 
   const wsServerUrl = `ws://${attestorIp}:${attestorPort}/ws`
   const client = new AttestorClient({
@@ -56,10 +51,10 @@ export async function startProver(
         }
       ],
       responseMatches: [
-        // {
-        //   type: 'contains',
-        //   value: data0
-        // }
+        {
+          type: 'contains',
+          value: '0'
+        }
       ]
     },
     secretParams: {
@@ -69,23 +64,30 @@ export async function startProver(
     client: client,
     zkEngine,
   })
-  // console.log('claimUrl', claimUrl)
-  // console.log('elapsed', +new Date() - start)
 
+  if (result.error) {
+    console.error('error in creating claim', result.error)
+    return
+  }
+
+  // 
+  // Now, anybody (including you) can verify this claim by using the signature & the claim.
+  // 
+  // // this will throw an error if the claim or result is invalid
+  // await assertValidClaimSignatures(result)
+
+  // // If you'd like to actually view the transcript of the claim that the attestor saw & made a claim on, 
+  // // you can do so by accessing the transcript field in the result. 
+  // // This is a good way to verify your code isn't leaking any sensitive information.
   // const transcript = result.request!.transcript
   // const decTranscript = await decryptTranscript(
   //   transcript, logger, zkEngine,
   //   result.request?.fixedServerIV!, result.request?.fixedClientIV!
   // )
-  // const applMsgs = extractApplicationDataFromTranscript(decTranscript)
+
+  // // convert the transcript to a string for easy viewing
   // const transcriptStr = getTranscriptString(decTranscript)
   // console.log('receipt:\n', transcriptStr)
-
-  // const requestData = applMsgs
-  // .filter(m => m.sender === 'client')
-  // .map(m => uint8ArrayToStr(m.message))
-  // .join('')
-  // console.log(requestData)
 
   var memeory = 0
   if (typeof window === 'undefined') {
@@ -97,8 +99,6 @@ export async function startProver(
     cost: +new Date() - start,
     memory: memeory
   }
-  // console.log("process.memoryUsage2", process.memoryUsage());
-  // console.log("process.resourceUsage2", process.resourceUsage());
   console.log(`DONE:${JSON.stringify(stat)}`);
 
   await client.terminateConnection()

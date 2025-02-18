@@ -46,3 +46,6 @@ int main(int argc, char** argv) {
 #endif
     return 0;
 }
+
+// number of threads
+int threads = 4;

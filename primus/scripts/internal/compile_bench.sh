@@ -21,6 +21,7 @@ if [ -d ${repo_dir} ]; then
     -DLOAD_CIRCUIT_FROM_MEM=${load_circuits_from_memory} \
     -DLOAD_CERT_FROM_MEM=${load_certs_from_memory} \
     -DOPT_NO_PRINT=${cpp_no_print} \
+    -DUSE_WEBSOCKET_IO=${use_websocket_io} \
     -DTHREADING=${enable_threading} \
     -DCMAKE_INSTALL_PREFIX=${installdir} \
     -DCMAKE_BUILD_TYPE=${build_type} \

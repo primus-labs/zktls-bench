@@ -29,8 +29,6 @@ static size_t QUERY_BYTE_LEN = 2 * 1024;
 // http response size
 static size_t RESPONSE_BYTE_LEN = 2 * 1024;
 
-const int threads = 4;
-
 void full_protocol_offline() {
     EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
 

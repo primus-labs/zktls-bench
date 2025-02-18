@@ -1,10 +1,6 @@
 #include <string>
 using namespace std;
 
-// 1: use websocket io
-// 0: use net io
-#define USE_WEBSOCKET_IO 1
-
 #if USE_WEBSOCKET_IO
 #include "websocket_io_channel.h"
 using PrimusIO = WebSocketIO;
@@ -38,3 +34,6 @@ string test_protocol(const string& args);
 string test_prot_on_off(const string& args);
 // proxy model bench function
 string test_prove_proxy_tls(const string& args);
+
+// threads
+extern int threads;

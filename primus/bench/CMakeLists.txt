@@ -40,5 +40,10 @@ ENDIF()
 include_directories(${OTLS_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/network)
 
+option(USE_WEBSOCKET_IO "" ON)
+IF(USE_WEBSOCKET_IO)
+  add_definitions(-DUSE_WEBSOCKET_IO=1)
+ENDIF()
+
 add_subdirectory(network)
 add_subdirectory(zk_tls)

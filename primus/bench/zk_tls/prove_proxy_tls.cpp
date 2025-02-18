@@ -214,7 +214,6 @@ bool prove_proxy_tls(int party) {
     return res;
 }
 
-const int threads = 4;
 string test_prove_proxy_tls(const string& args) {
     json j = json::parse(args);
     string partyStr = j["party"];

@@ -28,6 +28,10 @@ enable_threading=ON
 cpp_no_print=OFF
 wasm_no_print=OFF
 
+# ON: use websocket io
+# OFF: use net io
+use_websocket_io=ON
+
 load_certs_from_memory=ON
 load_circuits_from_memory=ON
 #######################################################################

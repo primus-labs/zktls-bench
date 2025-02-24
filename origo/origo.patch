@@ -1,0 +1,294 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 0a366a1..d2c879c 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1438,6 +1438,7 @@ dependencies = [
+  "clap",
+  "client-side-prover",
+  "console_error_panic_hook",
++ "dhat",
+  "elliptic-curve",
+  "futures",
+  "getrandom 0.2.15",
+@@ -2116,6 +2117,22 @@ dependencies = [
+  "unicode-xid",
+ ]
+ 
++[[package]]
++name = "dhat"
++version = "0.3.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "98cd11d84628e233de0ce467de10b8633f4ddaecafadefc86e13b84b8739b827"
++dependencies = [
++ "backtrace",
++ "lazy_static",
++ "mintex",
++ "parking_lot",
++ "rustc-hash 1.1.0",
++ "serde",
++ "serde_json",
++ "thousands",
++]
++
+ [[package]]
+ name = "diff"
+ version = "0.1.13"
+@@ -3588,6 +3605,12 @@ dependencies = [
+  "adler2",
+ ]
+ 
++[[package]]
++name = "mintex"
++version = "0.1.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9bec4598fddb13cc7b528819e697852653252b760f1228b7642679bf2ff2cd07"
++
+ [[package]]
+ name = "mio"
+ version = "1.0.3"
+@@ -6050,6 +6073,12 @@ dependencies = [
+  "syn 2.0.90",
+ ]
+ 
++[[package]]
++name = "thousands"
++version = "0.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "3bf63baf9f5039dadc247375c29eb13706706cfde997d0330d05aa63a77d8820"
++
+ [[package]]
+ name = "thread_local"
+ version = "1.1.8"
+@@ -7362,6 +7391,7 @@ dependencies = [
+ name = "webprover"
+ version = "0.0.0"
+ dependencies = [
++ "hex",
+  "http-body-util",
+  "hyper",
+  "hyper-util",
+@@ -7371,6 +7401,7 @@ dependencies = [
+  "serde_json",
+  "tokio",
+  "tokio-rustls",
++ "tokio-util",
+ ]
+ 
+ [[package]]
+diff --git a/Cargo.toml b/Cargo.toml
+index 5b8ba8f..47da4aa 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -76,6 +76,8 @@ rustls-pemfile={ version="2.0.0" }
+ tokio         ={ workspace=true }
+ tokio-rustls  ={ workspace=true }
+ serde_json    ={ workspace=true }
++tokio-util = { workspace=true }
++hex = "0.4.3"
+ 
+ [profile.dev]
+ opt-level      =1
+diff --git a/bin/mock_server.rs b/bin/mock_server.rs
+index 20948f5..bd01f24 100644
+--- a/bin/mock_server.rs
++++ b/bin/mock_server.rs
+@@ -70,7 +70,42 @@ async fn response(
+         .body(Full::new(Bytes::from(data.to_string())))
+         .unwrap(),
+     ),
+-    "/bin/128B" => Ok(Response::new(Full::new(Bytes::from(vec![0; 128])))),
++    "/bin/test" => {
++        let data = json!({
++            "hello": "world"
++        });
++        Ok(Response::new(Full::new(Bytes::from(data.to_string()))))
++    },
++    "/bin/8B" => {
++        let data = json!({
++            "hello": hex::encode(vec![0; 4]).to_string()
++        });
++        Ok(Response::new(Full::new(Bytes::from(data.to_string()))))
++    },
++    "/bin/16B" => {
++        let data = json!({
++            "hello": hex::encode(vec![0; 8]).to_string()
++        });
++        Ok(Response::new(Full::new(Bytes::from(data.to_string()))))
++    },
++    "/bin/256B" => {
++        let data = json!({
++            "hello": hex::encode(vec![0; 128]).to_string()
++        });
++        Ok(Response::new(Full::new(Bytes::from(data.to_string()))))
++    },
++    "/bin/1024B" => {
++        let data = json!({
++            "hello": hex::encode(vec![0; 512]).to_string()
++        });
++        Ok(Response::new(Full::new(Bytes::from(data.to_string()))))
++    },
++    "/bin/2048B" => {
++        let data = json!({
++            "hello": hex::encode(vec![0; 1024]).to_string()
++        });
++        Ok(Response::new(Full::new(Bytes::from(data.to_string()))))
++    },
+     "/bin/1KB" => Ok(Response::new(Full::new(Bytes::from(vec![0; 1024])))),
+     "/bin/2KB" => Ok(Response::new(Full::new(Bytes::from(vec![0; 2048])))),
+     "/bin/4KB" => Ok(Response::new(Full::new(Bytes::from(vec![0; 4096])))),
+diff --git a/client/Cargo.toml b/client/Cargo.toml
+index c59b7c2..b1fec18 100644
+--- a/client/Cargo.toml
++++ b/client/Cargo.toml
+@@ -31,6 +31,7 @@ client-side-prover={ git="https://github.com/pluto/client-side-prover", rev="8e7
+ # TLSN
+ tlsn-prover={ workspace=true }
+ tlsn-core  ={ workspace=true }
++dhat = { version = "0.3.3" }
+ 
+ caratls_ekm_client                          ={ workspace=true }
+ caratls_ekm_google_confidential_space_client={ workspace=true }
+diff --git a/client/src/lib.rs b/client/src/lib.rs
+index 51cd022..85d2318 100644
+--- a/client/src/lib.rs
++++ b/client/src/lib.rs
+@@ -23,6 +23,7 @@ use serde::{Deserialize, Serialize};
+ pub use tlsn_core::proof::TlsProof;
+ use tlsn_prover::tls::ProverConfig;
+ use tracing::{debug, info};
++use std::time::Instant;
+ 
+ use crate::errors::ClientErrors;
+ 
+@@ -79,6 +80,7 @@ pub async fn prover_inner_tlsn(mut config: config::Config) -> Result<Proof, erro
+     .build()
+     .map_err(|e| ClientErrors::Other(e.to_string()))?;
+ 
++  let start_time = Instant::now();
+   #[cfg(target_arch = "wasm32")]
+   let prover = tlsn_wasm32::setup_connection(&mut config, prover_config).await?;
+ 
+@@ -88,8 +90,13 @@ pub async fn prover_inner_tlsn(mut config: config::Config) -> Result<Proof, erro
+   } else {
+     tlsn_native::setup_tcp_connection(&mut config, prover_config).await
+   };
++  let cost = Instant::now().duration_since(start_time).as_secs();
++  println!("setup cost: {}", cost);
+ 
++  let start_time = Instant::now();
+   let p = tlsn::notarize(prover).await?;
++  let cost = Instant::now().duration_since(start_time).as_secs();
++  println!("notarize cost: {}", cost);
+   Ok(Proof::TLSN(Box::new(p)))
+ }
+ 
+@@ -100,7 +107,10 @@ pub async fn prover_inner_origo(
+ ) -> Result<Proof, errors::ClientErrors> {
+   let session_id = config.session_id.clone();
+ 
++  let start_time = Instant::now();
+   let mut proof = origo::proxy_and_sign_and_generate_proof(config.clone(), proving_params).await?;
++  let cost = Instant::now().duration_since(start_time).as_secs();
++  println!("proxy and sign and generate proof cost: {}", cost);
+ 
+   let manifest =
+     config.proving.manifest.clone().ok_or(errors::ClientErrors::ManifestMissingError)?;
+diff --git a/client/src/main.rs b/client/src/main.rs
+index 5b4f4eb..25a9d0d 100644
+--- a/client/src/main.rs
++++ b/client/src/main.rs
+@@ -1,6 +1,8 @@
+ use clap::Parser;
+ use client::{config::Config, errors::ClientErrors};
+ use tracing::Level;
++use std::time::Instant;
++use tokio_util::{io::{InspectReader, InspectWriter}};
+ 
+ #[derive(Parser)]
+ #[clap(name = "Web Proof Client")]
+@@ -13,9 +15,14 @@ struct Args {
+   config: String,
+ }
+ 
++// #[global_allocator]
++// static ALLOC: dhat::Alloc = dhat::Alloc;
++
+ #[tokio::main]
+ async fn main() -> Result<(), ClientErrors> {
+   let args = Args::parse();
++  let start_time = Instant::now();
++  // let _profiler = dhat::Profiler::builder().testing().build();
+ 
+   let log_level = match args.log_level.to_lowercase().as_str() {
+     "error" => Level::ERROR,
+@@ -37,5 +44,9 @@ async fn main() -> Result<(), ClientErrors> {
+   let proof = client::prover_inner(config, Some(proving_params)).await?;
+   let proof_json = serde_json::to_string_pretty(&proof)?;
+   println!("Proving Successful: proof_len={:?}", proof_json.len());
++  // let heap_max_bytes = dhat::HeapStats::get().max_bytes;
++  let cost = Instant::now().duration_since(start_time).as_secs();
++  // println!("heapMaxBytes: {}", heap_max_bytes);
++  println!("totalCost: {}", cost);
+   Ok(())
+ }
+diff --git a/client_wasm/demo/package.json b/client_wasm/demo/package.json
+index 7853adb..32e67b0 100644
+--- a/client_wasm/demo/package.json
++++ b/client_wasm/demo/package.json
+@@ -4,7 +4,7 @@
+   "version": "1.0.0",
+   "scripts": {
+     "prestart": "node scripts/generate-config.js",
+-    "start": "webpack-dev-server --port 8090",
++    "start": "webpack-dev-server --port 38082",
+     "test": "node scripts/generate-config.js && playwright test --browser=chromium"
+   },
+   "devDependencies": {
+@@ -17,4 +17,4 @@
+     "@playwright/test": "^1.42.1",
+     "wait-on": "^7.2.0"
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/client_wasm/demo/webpack.config.js b/client_wasm/demo/webpack.config.js
+index 42e10e2..f649b9c 100644
+--- a/client_wasm/demo/webpack.config.js
++++ b/client_wasm/demo/webpack.config.js
+@@ -57,4 +57,4 @@ module.exports = {
+   experiments: {
+     asyncWebAssembly: true,
+   },
+-};
+\ No newline at end of file
++};
+diff --git a/fixture/client.origo_tcp_local.json b/fixture/client.origo_tcp_local.json
+index 4a5ebf8..4396343 100644
+--- a/fixture/client.origo_tcp_local.json
++++ b/fixture/client.origo_tcp_local.json
+@@ -1,7 +1,7 @@
+ {
+ 	"mode": "Origo",
+ 	"notary_host": "localhost",
+-	"notary_port": 7443,
++	"notary_port": 38081,
+ 	"notary_ca_cert": "MIIFszCCA5ugAwIBAgIUeXLQmnjeXsHpGji7xA8oJjjw7WwwDQYJKoZIhvcNAQELBQAwaTELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExEjAQBgNVBAcMCVBhbG8gQWx0bzEVMBMGA1UECgwMT3JnYW5pemF0aW9uMRowGAYDVQQDDBFMb2NhbGhvc3QgUm9vdCBDQTAeFw0yNDA2MDcyMjUyNDBaFw0yOTA2MDYyMjUyNDBaMGkxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRIwEAYDVQQHDAlQYWxvIEFsdG8xFTATBgNVBAoMDE9yZ2FuaXphdGlvbjEaMBgGA1UEAwwRTG9jYWxob3N0IFJvb3QgQ0EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDIHMEL9gVSxT/J0qS4xDkDZs1d1UG0+z6NFLLsGdV7gu0ZJbDPlNd0kpjWsisVNB7TcqWoq5ROK5CR+6lZxXC8nbqr2YAJ2O8mHIXcYv7msAN3UYxtM6v1M7K+vNMJdDjZVAxcOKq5R7uUDUPw1weePz6eVEjntAW8mUjqkfnCqYml943Ud3724SkI5wyUT9rKS3bk6hvneq1ah/b1zRGDF2gp+T/oNe4ieS/LGoIUluE2csGRXtt542gpJnw5L54JASmGgt6hunUSWtoaht7Qxv6hYpieu4iHqZY1kfcFDjDH2WI16g1YqrWHzk1l7vWNLVDEcK3kdSQ1GmYAij8ZjAi0LJizLwtN//EkfxiOPlV435itK3uugY+etxrk77BeA6PmVcpZeLLXYuKSrzfaBh0ifP2p0uRlShURi5Rz4IE0I7wHkZ44x9MKYv8YzXK7O29HD158tgorxqwwKmkHqSxWpp7SRKvNnMulHN/el+IKDrPeBhVXsSSkd6U+/H61q7i0SY9TqqhdiMQLW/efK9LkVRen5myhwqogwiF/42Jp2nrCeuzv5YDsAFSrQ0lukW+Hz7FXV+0axnKeXZ08Nd+IS1BhGyMgHo6PWMP1fWyfO0DJVUfIqrHqvBy8bW0yNOuhiyU2oeyDRKv75OMxpIrUeX3qvmrVcYUPvfXsVQIDAQABo1MwUTAdBgNVHQ4EFgQUlro6UuKRY+lHZ3T4FQMhoQAJ2a8wHwYDVR0jBBgwFoAUlro6UuKRY+lHZ3T4FQMhoQAJ2a8wDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAgEARliSCLdjNI5fFkNwXDK6k6jN5hITrY07XIawUIEwinjQqgLkYFvzXbMtfLwsWmxMPjDVYYDa5Y2NAGcH08b//2z9EuHxMOTOFTKr59BEcVxV1cxV+lspAunH8DLSlLJhf/EeR+MhIIHAfhlE8V7lvlE1EbM+Uj5JYIeefV/4omsGrphyHD3oSJAQDae0su200I/i2yAaTrwXLZ4HtaXsnxKZ4PMPFWaLvMQ8DsLgx2VB3/vQJn74Xepau6mYEWlRnUu90mj79gJOnwBKPlLojF6dJOMIJ2YHr9fI8sUfkVwPFVlkDKJcr0ll5RL3O/naNlLQZuOgijOM5YF5iTrefliVodEHpBPID2mhtq/E+ZIQWLpik8ulsJ8ufN9YfrbjbsiC/KeoMqoFCImRSyMGQDMADo4EV3DNfDFvfrHx0qBMmJ0nkhuGobphegMPCjZ3axvQwQulKuHXmFpAvGYcpK/twBMC1MJkV04tIwVEDZG6id5oKYtrIXHdSFshf6r3z4bbgq6kJnOxZ8Vo4cEw/dgc3hRivr+HnxOJcEk2CTQlCVOiCQAg64OqDEOoswVg6nzoO3RJhFatu+abO22MIXPNGma02zBoQZLYpGzL9z6pMnPKjL15G9H1SYVSTGhmq+GVtdRibg8rLBciSm3ERd7gNRqvYP5GrjCtUIbOTEc=",
+ 	"target_method": "GET",
+ 	"target_url": "https://gist.githubusercontent.com/mattes/23e64faadb5fd4b5112f379903d2572e/raw/74e517a60c21a5c11d94fec8b572f68addfade39/example.json",
+@@ -52,4 +52,4 @@
+ 			}
+ 		}
+ 	}
+-}
+\ No newline at end of file
++}
+diff --git a/fixture/notary-config.toml b/fixture/notary-config.toml
+index c8e82e2..394a085 100644
+--- a/fixture/notary-config.toml
++++ b/fixture/notary-config.toml
+@@ -1,4 +1,4 @@
+-listen            ="0.0.0.0:7443"
++listen            ="0.0.0.0:38081"
+ server_cert       ="./fixture/certs/server-cert.pem"
+ server_key        ="./fixture/certs/server-key.pem"
+ notary_signing_key="./fixture/certs/tlsn.key"

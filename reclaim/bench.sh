@@ -36,8 +36,7 @@ mkdir -p logs
 for rate in ${rates[@]}; do
   for delay in ${delays[@]}; do
     if [ "$party" = "1" ]; then
-      delay2=$((delay * 2))
-      sudo tc qdisc add dev $interface root netem rate ${rate}mbit delay ${delay2}ms
+      sudo tc qdisc add dev $interface root netem rate ${rate}mbit delay ${delay}ms
     fi
     for request in ${requests[@]}; do
       for response in ${responses[@]}; do

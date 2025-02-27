@@ -7,6 +7,7 @@
 curl https://sh.rustup.rs | sh
 . "$HOME"/.cargo/env
 rustup install nightly-2024-10-28
+rustup component add rust-src --toolchain nightly-2024-10-28-x86_64-unknown-linux-gnu
 ```
 
 ### Install Dependency

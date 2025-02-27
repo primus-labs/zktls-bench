@@ -1,3 +1,3 @@
 #! /bin/bash
 cd 3rd/web-prover
-./target/release/mock-server
+./target/release/mock_server

@@ -7,7 +7,7 @@ if [ ! -d "./3rd/web-prover" ]; then
   exit 1
 fi
 
-cd ./3rd/origo
+cd ./3rd/web-prover
 git apply --check ${curdir}/origo.patch
 git apply ${curdir}/origo.patch
 

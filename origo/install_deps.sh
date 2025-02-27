@@ -12,5 +12,5 @@ if [ ! -d "./3rd/web-prover/proofs" ]; then
   exit 1
 fi
 
-cd 3rd/web-prover/proofs
-make web-prover-circuits
+cd 3rd/web-prover
+make artifacts 

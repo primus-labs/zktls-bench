@@ -44,10 +44,10 @@ for rate in ${rates[@]}; do
           node lib/start_attestor $port >logs/2.log 2>&1
         elif [ "$party" = "1" ]; then
           echo "kind: $kind rate: $rate delay: $delay request: $request response: $response"
-          sudo iptables -D INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
-          sudo iptables -D OUTPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
-          sudo iptables -I INPUT -p tcp --dport $port -j ACCEPT
-          sudo iptables -I OUTPUT -p tcp --sport $port -j ACCEPT
+          sudo iptables -D INPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
+          sudo iptables -D OUTPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
+          sudo iptables -I INPUT -p tcp --sport $port -j ACCEPT
+          sudo iptables -I OUTPUT -p tcp --dport $port -j ACCEPT
 
           logfile=logs/$party-$kind-$rate-$delay-$request-$response-$tls.log
           zkengine='gnark'
@@ -67,10 +67,10 @@ for rate in ${rates[@]}; do
           if [ "$kind" = "wasm" ]; then
             memory=$(cat $logfile | grep memStat: | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="totalJSHeapSize") {print int($(i+2)/1024)}}}')
           fi
-          send_bytes=$(sudo iptables -L INPUT -v -n | grep ":${port}" | awk '{print $2}')
-          recv_bytes=$(sudo iptables -L OUTPUT -v -n | grep ":${port}" | awk '{print $2}')
-          sudo iptables -D INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
-          sudo iptables -D OUTPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
+          send_bytes=$(sudo iptables -L OUTPUT -v -n | grep ":${port}" | awk '{print $2}')
+          recv_bytes=$(sudo iptables -L INPUT -v -n | grep ":${port}" | awk '{print $2}')
+          sudo iptables -D INPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
+          sudo iptables -D OUTPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
 
           resfile=result-$party.csv
           if [ ! -f "$resfile" ]; then

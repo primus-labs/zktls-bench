@@ -32,10 +32,10 @@ do
         do
             for resp in ${responseSize[@]}
             do
-                sudo iptables -D INPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
-                sudo iptables -D OUTPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
-                sudo iptables -I INPUT -p tcp --dport $port -j ACCEPT
-                sudo iptables -I OUTPUT -p tcp --sport $port -j ACCEPT
+                sudo iptables -D INPUT -p tcp --sport $port -j ACCEPT 2>/dev/null
+                sudo iptables -D OUTPUT -p tcp --dport $port -j ACCEPT 2>/dev/null
+                sudo iptables -I INPUT -p tcp --sport $port -j ACCEPT
+                sudo iptables -I OUTPUT -p tcp --dport $port -j ACCEPT
                 memory=0
 
                 if [ "$kind" == "native" ]; then
@@ -52,8 +52,8 @@ do
                     memory=$(cat tmp.log | grep "WASM Memory Usage" | tail -n 1 | awk '{print $5}')
                 fi
 
-                send_bytes=$(sudo iptables -L INPUT -v -n | grep ":${port}" | awk '{print $2}')
-                recv_bytes=$(sudo iptables -L OUTPUT -v -n | grep ":${port}" | awk '{print $2}')
+                send_bytes=$(sudo iptables -L OUTPUT -v -n | grep ":${port}" | awk '{print $2}')
+                recv_bytes=$(sudo iptables -L INPUT -v -n | grep ":${port}" | awk '{print $2}')
                 echo "${rate}#${delay}#${req}#${resp}#${send_bytes}#${recv_bytes}#${totalCost}#${memory}" >> result.log
 
             done

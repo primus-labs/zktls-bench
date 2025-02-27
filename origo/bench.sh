@@ -41,6 +41,10 @@ do
                 if [ "$kind" == "native" ]; then
                     cargo run --release -p client -- --log-level WARN --config ./fixture/client.origo_${req}_${resp}.json > tmp.log
                     totalCost=$(grep totalCost tmp.log | awk -F' ' '{print $2}')
+                    memoryStat=$(grep heapMaxBytes tmp.log)
+                    if [ -n "$memoryStat" ]; then
+                        memory=$(echo $memoryStat | awk -F' ' '{print int($2 / 1024)}')
+                    fi
                 elif [ "$kind" == "wasm" ]; then
                     cd ${curdir}/../fixture
                     rm client.origo_tcp_local.json
@@ -54,7 +58,10 @@ do
 
                 send_bytes=$(sudo iptables -L OUTPUT -v -n | grep ":${port}" | awk '{print $2}')
                 recv_bytes=$(sudo iptables -L INPUT -v -n | grep ":${port}" | awk '{print $2}')
-                echo "${rate}#${delay}#${req}#${resp}#${send_bytes}#${recv_bytes}#${totalCost}#${memory}" >> result.log
+                if [ ! -f result.log ]; then
+                    echo "kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)" > result.log
+                fi
+                echo "${kind},all,${rate},${delay},${req},${resp},${send_bytes},${recv_bytes},${totalCost},${memory}" >> result.log
 
             done
         done

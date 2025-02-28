@@ -56,12 +56,12 @@ for line in $(cat ${cfgfile}); do
   total_cost=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="totalCost") {print $(i+2)}}}')
   memory=0
   if [ "$kind" == "native" ]; then
-    memory=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="memory") {print $(i+2)}}}')
+    memory=$(echo $res | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="memory") {print int($(i+2) / 1024)}}}')
   fi
 
   if [ "$kind" == "wasm" ]; then
     memoryRes=$(cat $logfile | grep memStat)
-    memory=$(echo $memoryRes | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="totalJSHeapSize") {print $(i+2)}}}')
+    memory=$(echo $memoryRes | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="totalJSHeapSize") {print int($(i+2) / 1024)}}}')
   fi
 
   echo "$kind,$program,$bandwith,$delay,$request_size,$response_size,$send_bytes,$recv_bytes,$total_cost,$memory" >>$resfile

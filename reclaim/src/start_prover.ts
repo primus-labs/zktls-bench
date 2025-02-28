@@ -24,7 +24,6 @@ export async function startProver(
     supportedProtocolVersions: [tlsVersion]
   }
 
-  const data = uint8ArrayToStr(new Uint8Array(reqLength))
 
   const wsServerUrl = `ws://${attestorIp}:${attestorPort}/ws`
   const client = new AttestorClient({
@@ -41,7 +40,7 @@ export async function startProver(
     params: {
       url: claimUrl,
       method: 'POST',
-      body: data,
+      body: '',
       headers: {
         'replength': repLength.toString()
       },

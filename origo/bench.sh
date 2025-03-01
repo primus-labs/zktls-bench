@@ -6,7 +6,7 @@ fi
 
 bandwithSet=(50 100 200)
 latencySet=(10 15 20)
-reqSize=(1024 2048)
+reqSize=(0)
 responseSize=(16 256 1024 2048)
 port=$1
 interface=$2

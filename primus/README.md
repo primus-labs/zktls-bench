@@ -19,7 +19,7 @@
 
 ### Configure
 
-The path of the configuration file is [./config/config](./config/config). All fields are seperated by `:`. The meanings of the fields are `bandwith(Mbps)`, `delay(ms)`, `request_size(Byte)`, `response_size(Byte)` in order.
+The path of the configuration file is [./config/config](./config/config). All fields are separated by `:`. The meanings of the fields are `bandwith(Mbps)`, `delay(ms)`, `request_size(Byte)`, `response_size(Byte)` in order.
 
 ### bench
 

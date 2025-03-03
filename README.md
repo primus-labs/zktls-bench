@@ -9,7 +9,7 @@ This repository contains some bench test scripts for native (x86/arm) and browse
 - [Primus](./primus/README.md)
 - [Tlsn](./tlsn/README.md)
 - [Reclaim](./reclaim/README.md)
-- [Origo](./origo/README.md) (TODO)
+- [Origo](./origo/README.md)
 
 
 ## Bench Result

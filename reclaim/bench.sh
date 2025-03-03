@@ -74,7 +74,7 @@ for rate in ${rates[@]}; do
 
           resfile=result-$party.csv
           if [ ! -f "$resfile" ]; then
-            echo "kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)" >$resfile
+            echo "kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)" >$resfile
           fi
           echo "$kind,$tls-$zkengine,$rate,$delay,$request,$response,$send_bytes,$recv_bytes,$cost,$memory" >>$resfile
         fi

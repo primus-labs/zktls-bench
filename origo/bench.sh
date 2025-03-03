@@ -4,7 +4,7 @@ if [ $# -lt 2 ]; then
 fi
 
 
-bandwithSet=(50 100 200)
+bandwidthSet=(50 100 200)
 latencySet=(10 15 20)
 reqSize=(0)
 responseSize=(16 256 1024 2048)
@@ -26,7 +26,7 @@ curdir=$(pwd)
 
 export RUSTFLAGS="--cfg aes_armv8"
 sudo tc qdisc del dev $interface root >/dev/null 2>&1
-for rate in ${bandwithSet[@]}
+for rate in ${bandwidthSet[@]}
 do
     for delay in ${latencySet[@]}
     do
@@ -63,7 +63,7 @@ do
                 send_bytes=$(sudo iptables -L OUTPUT -v -n | grep ":${port}" | awk '{print $2}')
                 recv_bytes=$(sudo iptables -L INPUT -v -n | grep ":${port}" | awk '{print $2}')
                 if [ ! -f result.log ]; then
-                    echo "kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)" > result.log
+                    echo "kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)" > result.log
                 fi
                 echo "${kind},all,${rate},${delay},${req},${resp},${send_bytes},${recv_bytes},${totalCost},${memory}" >> result.log
 

@@ -19,7 +19,7 @@
 
 ### Configure
 
-The path of the configuration file is [./config/config](./config/config). All fields are separated by `:`. The meanings of the fields are `bandwith(Mbps)`, `delay(ms)`, `request_size(Byte)`, `response_size(Byte)` in order.
+The path of the configuration file is [./config/config](./config/config). All fields are separated by `:`. The meanings of the fields are `bandwidth(Mbps)`, `delay(ms)`, `request_size(Byte)`, `response_size(Byte)` in order.
 
 ### bench
 
@@ -46,7 +46,7 @@ For `proxy-tls` model, the bench program is `test_prove_proxy_tls`. The same way
 
 ### Result
 
-Bench result is outputed in `result-${party}.csv`. The columns are `kind`,`name`,`bandwith(Mbps)`,`latency(ms)`,`request_size(B)`,`response_size(B)`,`send_bytes(B)`,`recv_bytes(B)`,`cost(ms)`,`memory(KB)`.
+Bench result is outputed in `result-${party}.csv`. The columns are `kind`,`name`,`bandwidth(Mbps)`,`latency(ms)`,`request_size(B)`,`response_size(B)`,`send_bytes(B)`,`recv_bytes(B)`,`cost(ms)`,`memory(KB)`.
 
 
 ## WASM

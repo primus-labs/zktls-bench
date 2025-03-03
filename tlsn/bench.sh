@@ -33,10 +33,10 @@ fi
 export VERIFIER_IP=$ip
 export VERIFIER_PORT=$port
 
-bandwithSet=(50 100 200)
+bandwidthSet=(50 100 200)
 latencySet=(10 15 20)
 ./reset_network.sh $interface
-for rate in ${bandwithSet[@]}; do
+for rate in ${bandwidthSet[@]}; do
   for delay in ${latencySet[@]}; do
     ./simulate_network.sh $interface $rate $delay
     if [ "$kind" = "wasm" ]; then

@@ -28,7 +28,7 @@ mkdir -p ${logdir}
 cfgfile=${curdir}/config/config
 resfile=${curdir}/result-$party.csv
 if [ ! -f "$resfile" ]; then
-  echo "kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)" >$resfile
+  echo "kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)" >$resfile
 fi
 
 CMD="./build/cpp/bench/bin/zktls_bench"
@@ -39,14 +39,14 @@ fi
 ./scripts/reset_network.sh $interface
 for line in $(cat ${cfgfile}); do
   echo $line
-  bandwith=$(echo $line | awk -F: '{print $1}')
+  bandwidth=$(echo $line | awk -F: '{print $1}')
   delay=$(echo $line | awk -F: '{print $2}')
   request_size=$(echo $line | awk -F: '{print $3}')
   response_size=$(echo $line | awk -F: '{print $4}')
-  echo "$bandwith#$delay#$request_size#$response_size"
-  logfile=${logdir}/bench-$kind-$program-$party-$bandwith-$delay-$request_size-$response_size.log
+  echo "$bandwidth#$delay#$request_size#$response_size"
+  logfile=${logdir}/bench-$kind-$program-$party-$bandwidth-$delay-$request_size-$response_size.log
 
-  ./scripts/simulate_network.sh $interface $bandwith $delay
+  ./scripts/simulate_network.sh $interface $bandwidth $delay
 
   $CMD $program $party $ip $port $request_size $response_size >$logfile
 
@@ -64,7 +64,7 @@ for line in $(cat ${cfgfile}); do
     memory=$(echo $memoryRes | awk -F'[:,"}]' '{for (i=1;i<NF;i++){if($i=="totalJSHeapSize") {print int($(i+2) / 1024)}}}')
   fi
 
-  echo "$kind,$program,$bandwith,$delay,$request_size,$response_size,$send_bytes,$recv_bytes,$total_cost,$memory" >>$resfile
+  echo "$kind,$program,$bandwidth,$delay,$request_size,$response_size,$send_bytes,$recv_bytes,$total_cost,$memory" >>$resfile
   sleep 4
 
   ./scripts/reset_network.sh $interface

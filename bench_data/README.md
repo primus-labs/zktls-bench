@@ -17,18 +17,25 @@ Based on [bench_data#20e54d0](https://github.com/primus-labs/zktls-bench/tree/20
 - cost: time required for a single attestation
 - memory: memory
 
-So, each file has 73 lines, one header line and 72 (3x3x2x4) lines of data.
+So, each file has 73(37, for origo/reclaim) lines, one header line and 72 (3x3x2x4) or 36 (3x3x1x4) lines of data.
 
 
 
 ## Machine Configuration
 ### X86
+- Cloud Machine
+  - CPU Platform: Intel Cascade Lake
+  - Machine Type: c2-standard-8
+  - Architecture: x86/64
 - OS: Ubuntu-22.04
 - CPU: 8 vCPUs, Intel(R) Xeon(R) CPU@ 3.10GHz
 - Memory: 32GB
 
 ### ARM
-- Cloud Machine: Ampere Altra, t2a-standand-8
+- Cloud Machine
+  - CPU Platform: Ampere Altra
+  - Machine Type: t2a-standand-8
+  - Architecture: arm64
 - OS: Ubuntu-22.04
 - CPU: 8 vCPUs, 3.1GHz
 - Memory: 32GB

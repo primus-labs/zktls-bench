@@ -1,4 +1,4 @@
-kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
+kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
 Native,all,50,10,1024,16,49588778,48911401,22000,133610
 Native,all,50,10,1024,256,52794056,52076930,24000,137259
 Native,all,50,10,1024,1024,63049622,62205483,27000,147871

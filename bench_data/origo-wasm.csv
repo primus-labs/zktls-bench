@@ -1,4 +1,4 @@
-kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
+kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
 wasm,all,50,10,0,16,69277,12925,192000,2336380
 wasm,all,50,10,0,256,69353,13166,201000,2344310
 wasm,all,50,10,0,1024,70400,13935,310000,2344310

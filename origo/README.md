@@ -25,8 +25,13 @@ make artifacts
 
 ### Patch
 ```bash
-bash ./patch_code.sh
+bash ./patch_code.sh origo.patch
 ```
+Or
+```bash
+bash ./patch_code.sh origo-memory.patch
+```
+**Note**: the first patch will not profiler memory usage. If you need to profiler memory usage, you should use the second patch file. 
 
 ## Compile
 

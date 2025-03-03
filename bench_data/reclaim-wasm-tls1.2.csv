@@ -1,4 +1,4 @@
-kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
+kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
 wasm,TLS1_2-snarkjs,50,10,0,16,9450,9882,14015,107450
 wasm,TLS1_2-snarkjs,50,10,0,256,12496,13217,18660,111920
 wasm,TLS1_2-snarkjs,50,10,0,1024,22617,24157,37086,25744

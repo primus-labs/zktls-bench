@@ -194,7 +194,7 @@ index e0a7b60..49e920e 100644
    let manifest =
      config.proving.manifest.clone().ok_or(errors::ClientErrors::ManifestMissingError)?;
 diff --git a/client/src/main.rs b/client/src/main.rs
-index 5b4f4eb..37135ab 100644
+index 5b4f4eb..e7fb43a 100644
 --- a/client/src/main.rs
 +++ b/client/src/main.rs
 @@ -1,6 +1,8 @@
@@ -206,19 +206,28 @@ index 5b4f4eb..37135ab 100644
  
  #[derive(Parser)]
  #[clap(name = "Web Proof Client")]
-@@ -16,6 +18,7 @@ struct Args {
+@@ -13,9 +15,14 @@ struct Args {
+   config: String,
+ }
+ 
++#[global_allocator]
++static ALLOC: dhat::Alloc = dhat::Alloc;
++
  #[tokio::main]
  async fn main() -> Result<(), ClientErrors> {
    let args = Args::parse();
 +  let start_time = Instant::now();
++  let _profiler = dhat::Profiler::builder().testing().build();
  
    let log_level = match args.log_level.to_lowercase().as_str() {
      "error" => Level::ERROR,
-@@ -37,5 +40,7 @@ async fn main() -> Result<(), ClientErrors> {
+@@ -37,5 +44,9 @@ async fn main() -> Result<(), ClientErrors> {
    let proof = client::prover_inner(config, Some(proving_params)).await?;
    let proof_json = serde_json::to_string_pretty(&proof)?;
    println!("Proving Successful: proof_len={:?}", proof_json.len());
++  let heap_max_bytes = dhat::HeapStats::get().max_bytes;
 +  let cost = Instant::now().duration_since(start_time).as_secs();
++  println!("heapMaxBytes: {}", heap_max_bytes);
 +  println!("totalCost: {}", cost);
    Ok(())
  }

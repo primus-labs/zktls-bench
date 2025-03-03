@@ -1,4 +1,4 @@
-kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
+kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
 native,TLS1_3-gnark,50,10,0,16,6611,7329,3631,375384
 native,TLS1_3-gnark,50,10,0,256,8097,9097,4769,464036
 native,TLS1_3-gnark,50,10,0,1024,12611,14316,8456,328924

@@ -1,5 +1,10 @@
 #!/bin/bash
 set -e
+if [ $# -ne 1 ]; then
+	echo "Usage: $0 \${patch_file}"
+	exit 1
+fi
+patchFile=$1
 
 curdir=$(pwd)
 if [ ! -d "./3rd/web-prover" ]; then
@@ -8,7 +13,8 @@ if [ ! -d "./3rd/web-prover" ]; then
 fi
 
 cd ./3rd/web-prover
-git apply --check ${curdir}/origo.patch
-git apply ${curdir}/origo.patch
+git checkout -- .
+git apply --check ${curdir}/$patchFile
+git apply ${curdir}/$patchFile
 
 cp ${curdir}/fixture/* fixture/

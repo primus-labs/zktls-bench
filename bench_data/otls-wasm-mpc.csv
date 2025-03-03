@@ -1,4 +1,4 @@
-kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
+kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
 wasm,test_protocol,50,10,1024,16,23548880,1266763,7054.799,34195
 wasm,test_protocol,50,10,1024,256,23561168,1266763,7036.3,34207
 wasm,test_protocol,50,10,1024,1024,23593969,1266763,7081.4,34495

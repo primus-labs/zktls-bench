@@ -1,4 +1,4 @@
-kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
+kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
 native,test_prot_on_off,50,10,1024,16,24162160,1008459,5210.734,104824
 native,test_prot_on_off,50,10,1024,256,24174448,1008459,5213.534,109404
 native,test_prot_on_off,50,10,1024,1024,24207248,1008459,5229.351,135340

@@ -1,4 +1,4 @@
-kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
+kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
 wasm,test_prove_proxy_tls,50,10,1024,16,375302,788721,2132.7,11085
 wasm,test_prove_proxy_tls,50,10,1024,256,383494,788721,2305.099,11093
 wasm,test_prove_proxy_tls,50,10,1024,1024,416262,788721,2311.5,11125

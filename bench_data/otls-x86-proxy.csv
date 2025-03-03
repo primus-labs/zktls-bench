@@ -1,4 +1,4 @@
-kind,name,bandwith(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
+kind,name,bandwidth(Mbps),latency(ms),request_size(B),response_size(B),send_bytes(B),recv_bytes(B),cost(ms),memory(KB)
 native,test_prove_proxy_tls,50,10,1024,16,375302,788721,603.483,70408
 native,test_prove_proxy_tls,50,10,1024,256,383494,788721,609.331,75276
 native,test_prove_proxy_tls,50,10,1024,1024,416262,788721,626.848,91020

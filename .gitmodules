@@ -1,6 +1,3 @@
-[submodule "primus/3rd/openssl-1.1.1"]
-	path = primus/3rd/openssl-1.1.1
-	url = git@github.com:primus-labs/openssl.git
 [submodule "primus/3rd/otls"]
 	path = primus/3rd/otls
 	url = git@github.com:primus-labs/otls.git
@@ -14,3 +11,6 @@
 [submodule "origo/3rd/web-prover"]
 	path = origo/3rd/web-prover
 	url = git@github.com:pluto/web-prover.git
+[submodule "primus/3rd/openssl-1.1.1"]
+	path = primus/3rd/openssl-1.1.1
+	url = git@github.com:openssl/openssl.git

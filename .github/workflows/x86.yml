@@ -1,0 +1,28 @@
+name: x86
+on: [push, pull_request]
+
+jobs:
+  build_x86:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-13]
+        build_target: [cpp, wasm]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      BUILD_TARGET: ${{matrix.build_target}}
+    steps:
+    - uses: actions/checkout@v2
+    - name: install dependency
+      shell: bash
+      run: |
+        git clone --recursive https://github.com/juj/emsdk.git
+        cd emsdk
+        ./emsdk install 3.1.31
+        ./emsdk activate 3.1.31
+    - name: Create Build Environment
+      run: |
+        git submodule init
+        git submodule update --recursive
+        . ./emsdk/emsdk_env.sh
+        cd primus && ./scripts/x_compile.sh $BUILD_TARGET

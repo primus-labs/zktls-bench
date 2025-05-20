@@ -1,0 +1,17 @@
+name: arm 
+on: [push, pull_request]
+
+jobs:
+  build_arm:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-arm, macos-latest]
+    runs-on: ${{matrix.os}}
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create Build Environment
+      run: |
+        git submodule init
+        git submodule update --recursive
+        cd primus && ./scripts/x_compile.sh cpp 

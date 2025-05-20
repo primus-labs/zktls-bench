@@ -1,16 +1,16 @@
 [submodule "primus/3rd/otls"]
 	path = primus/3rd/otls
-	url = git@github.com:primus-labs/otls.git
+	url = https://github.com/primus-labs/otls.git
 [submodule "primus/3rd/primus-emp"]
 	path = primus/3rd/primus-emp
-	url = git@github.com:primus-labs/primus-emp.git
+	url = https://github.com/primus-labs/primus-emp.git
 [submodule "tlsn/3rd/tlsn"]
 	path = tlsn/3rd/tlsn
-	url = git@github.com:tlsnotary/tlsn.git
+	url = https://github.com/tlsnotary/tlsn.git
 	branch = dev
 [submodule "origo/3rd/web-prover"]
 	path = origo/3rd/web-prover
-	url = git@github.com:pluto/web-prover.git
+	url = https://github.com/pluto/web-prover.git
 [submodule "primus/3rd/openssl-1.1.1"]
 	path = primus/3rd/openssl-1.1.1
-	url = git@github.com:openssl/openssl.git
+	url = https://github.com/openssl/openssl.git

@@ -10,6 +10,8 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+bash ./scripts/internal/apply_patch.sh
+
 if [ "${target}" = "cpp" ] || [ "${target}" = "all" ]; then
   bash ./scripts/internal/compile_openssl.sh
   bash ./scripts/internal/compile_emp.sh

@@ -28,4 +28,5 @@ fi
 
 cd ${curdir}
 
+bash ./scripts/internal/revert_patch.sh
 echo "compile done"

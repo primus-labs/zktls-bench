@@ -65,3 +65,5 @@ sudo ./bench.sh 1 127.0.0.1 12345 lo [native|wasm]
 
 The results will be output to `metrics.csv` in the Prover side.
 
+The delay values in `bench.sh` are outgoing `netem` delays on each party's selected interface. With one shaped interface in each direction between separate hosts, a configured delay of `d` adds approximately `2 * d` to the RTT. See [the shared delay and RTT explanation](../bench_data/README.md#injected-delay-and-round-trip-time) when interpreting the benchmark data.
+

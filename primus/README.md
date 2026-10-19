@@ -21,6 +21,8 @@
 
 The path of the configuration file is [./config/config](./config/config). All fields are separated by `:`. The meanings of the fields are `bandwidth(Mbps)`, `delay(ms)`, `request_size(Byte)`, `response_size(Byte)` in order.
 
+`delay(ms)` is the outgoing packet delay applied by `tc netem` to the selected interface. When the prover and verifier run on separate hosts and both configure delay `d`, the added round-trip time is approximately `2 * d`. The result's legacy `latency(ms)` column stores `d`; see [the delay and RTT explanation](../bench_data/README.md#injected-delay-and-round-trip-time) for traffic-path assumptions and examples.
+
 ### bench
 
 For `mpc-tls` model, there are two bench programs, namely `test_protocol` and `test_prot_on_off`. The first program disable online-offline while the second program enable online-offline. You can run `./scripts/bench.sh` to start bench.

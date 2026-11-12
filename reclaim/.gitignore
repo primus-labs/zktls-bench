@@ -7,3 +7,7 @@ browser/browser-rpc
 logs
 result*.csv
 patched*.csv
+
+# Self-signed TLS material for the local mock servers (generate with ./gen-certs.sh)
+*.pem
+*.key

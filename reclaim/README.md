@@ -17,6 +17,13 @@ npm run build
 npm run build:browser
 ```
 
+The local mock servers need self-signed TLS certificates, which are not
+committed. Generate them once after cloning:
+
+```sh
+./gen-certs.sh
+```
+
 ## Script
 
 ```sh
